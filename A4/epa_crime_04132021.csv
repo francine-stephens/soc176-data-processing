@@ -1,0 +1,10 @@
+type,blurred_street,date_time,case_no,agency,description
+Property Crime,1900 BLOCK COOLEY AVE,4/10/2021 6:00,E121000943,East Palo Alto PD,TAMPER W/VEH-PROP STOLEN
+Proactive Policing,2000 BLOCK MENALTO AVE,4/12/2021 12:00,2.02104E+11,Menlo Park Police Department,CODEFU
+Proactive Policing,OKEEFE ST & CENTRAL AVE,4/12/2021 11:00,2.02104E+11,Menlo Park Police Department,TSTOP
+Proactive Policing,MANHATTAN AVE & OCONNOR ST,4/12/2021,2.02104E+11,Menlo Park Police Department,TSTOP
+Proactive Policing,OBRIEN DR & WILLOW RD,4/11/2021 0:00,2.02104E+11,Menlo Park Police Department,TSTOP
+Proactive Policing,EUCLID AVE & OCONNOR ST,4/10/2021 22:00,20210410084,Menlo Park Police Department,TSTOP
+Proactive Policing,WILLOW RD & IVY DR,4/10/2021 22:00,2.02104E+11,Menlo Park Police Department,TSTOP
+Proactive Policing,NOTRE DAME AVE & UNIVERSITY AVE,4/10/2021 20:00,20210400075,Menlo Park Police Department,TSTOP
+Proactive Policing,OKEEFE ST & CENTRAL AVE,4/10/2021 13:00,20210410040,Menlo Park Police Department,TSTOP
