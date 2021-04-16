@@ -3,7 +3,7 @@
 # 
 # AUTHOR: FRANCINE STEPHENS
 # DATE CREATED: 4/13/21
-# LAST UPDATED: 4/13/21
+# LAST UPDATED: 4/15/21
 #---------------------------------------------------
 
 
@@ -32,9 +32,17 @@ packages <- c(
 lapply(packages, library, character.only = T)
 
 wd <- getwd()
-chino <- read_csv(paste0(wd,
-                   "/chino_crime_04132021.csv")
-            )
+
+
+# IMPORT DATA-------------------------------------------------------------------
+
+## READ FROM OPEN DATA WEBSITETS ##
+sf <- read.socrata("https://data.sfgov.org/resource/wg3w-h783.json", 
+                   app_token = socrata_token, 
+                   email = email,
+                   password  = pword
+)
+
 la <- read.socrata("https://data.lacity.org/resource/2nrs-mtv8.csv", 
              app_token = socrata_token, 
              email = email,
@@ -46,10 +54,30 @@ kc <- read.socrata("https://data.kcmo.org/resource/w795-ffu6.json",
                    email = email,
                    password  = pword
                    )
+
 detroit <- st_read("https://opendata.arcgis.com/datasets/0825badfe6304620a998d162be0e135e_0.geojson")
 
+
+
+
+## DOWNLOADED/HAND COLLECTED CSV OR SHAPEFILE ##
 denver <- st_read(paste0(wd,
-                         "/denver_crime_04132021/crime.shp"))
+                         "/denver_crime_04132021/crime.shp")
+                  )
+
+chino <- read_csv(paste0(wd,
+                   "/chino_crime_04132021.csv")
+            )
+
+
+# CLEAN UP OPEN DATA & EXPORT --------------------------------------------------
+sf_clean <- sf %>%
+  mutate_at(vars(latitude:longitude), as.numeric) %>%
+  filter(!is.na(latitude), !is.na(longitude)) %>%
+  select(-point.latitude:-filed_online)
+write_csv(sf_clean, "SF_crime_geocoded.csv", na = "")
+
+
 
 # PROCESS ADDRESSES -----------------------------------------------------------
 chino_address <- chino %>%
