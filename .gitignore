@@ -38,10 +38,12 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# CSV
-A4/Police_Department_Incident_Reports_2018_to_Present2.csv
-A4/LA_crime_04132021_geocoded.csv
-A4/Oakland_CrimeWatch_90days.csv
-
+# CSV & Shapefiles
 A4/denver_crime_04132021/*
 A4/SF_crime_geocoded.csv
+A4/Kansas_City_crime_geocoded.csv
+A4/Detroit_crime_geocoded.csv
+A4/LA_crime_geocoded.csv
+A4/oakland_crime_blurred.csv
+A4/oakland_crime_intersections.csv
+A4/Denver_crime_geocoded.csv
