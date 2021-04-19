@@ -47,3 +47,6 @@ A4/LA_crime_geocoded.csv
 A4/oakland_crime_blurred.csv
 A4/oakland_crime_intersections.csv
 A4/Denver_crime_geocoded.csv
+A4/Oakland_*
+A4/oakland_*
+A4/oakland_crime_shp/*
