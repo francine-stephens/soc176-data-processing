@@ -83,10 +83,13 @@ palo_alto <- read_csv(paste0(wd,
                              "/Jan_Mar_2021_Palo_Alto_Police_Department_report.csv")
 )
 
+westminster <- read_csv(paste0(wd, 
+                               "/westminster_crime_04132021.csv")
+)
+
 chino <- read_csv(paste0(wd,
                    "/chino_crime_04132021.csv")
             )
-
 
 
 # CLEAN UP OPEN DATA + SHAPEFILES & EXPORT -------------------------------------
@@ -258,6 +261,8 @@ pitt_reduced <- pitt %>%
   ) 
 write_csv(pitt_reduced, "Pittsburgh_crime_geocoded.csv", na = "")
 
+
+## PALO ALTO
 palo_alto_date <- palo_alto %>%
   mutate(incident_date = as.Date(str_sub(date, end = 10), format = "%m/%d/%Y"),
          incident_month = month(incident_date, label = TRUE, abbr = FALSE),
@@ -278,7 +283,33 @@ palo_alto_date <- palo_alto %>%
     incident_ampm
   )
 
-  
+
+## WESTMINSTER
+westminster_date <- westminster %>%
+  mutate(incident_date = as.Date(date_time, format = "%m/%d/%Y", tz = "UTC"),
+         incident_month = month(incident_date, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(incident_date, label = TRUE, abbr = FALSE)
+  ) %>%
+  separate(date_time, c("date", "time_24hr_clock"), sep = " ") %>% 
+  mutate(
+    time_24hr_num = str_remove(time_24hr_clock, ":"),
+    time_24hr_num = as.numeric(time_24hr_num),
+    time_ampm = if_else(time_24hr_num < 1159,
+                        "AM",
+                        "PM")
+         ) %>%  
+  select(-time_24hr_num) %>%
+  relocate(
+    type,
+    blurred_street,
+    date,
+    time_24hr_clock,
+    incident_date,
+    incident_month,
+    incident_day_of_week,
+    time_ampm
+  )
+         
 
 # PROCESS ADDRESSES -----------------------------------------------------------
 ## OAKLAND
@@ -302,6 +333,15 @@ palo_alto_address <- palo_alto_date %>%
   filter(blurred_address != ".",
          blurred_address != "UNKNOWN")
   
+
+## WESTMINSTER
+westminster_address <- westminster_date %>% 
+  mutate(blurred_address = str_replace(blurred_street, "00 BLOCK", "50"),
+         city = "Westminster",
+         state = "CA",
+         postalcode = 92683
+         )
+
   
 ## CHINO
 chino_address <- chino %>%
@@ -328,6 +368,20 @@ palo_alto_export <- palo_alto_geocoded %>%
 write_csv(palo_alto_export, "palo_alto_crime_geocoded2.csv", na = "")
 
 
+## WESTMINSTER
+westminster_geocoded <- westminster_address %>%
+  geocode(street = blurred_address,
+          city = city,
+          state = state,
+          postalcode = postalcode,
+          method = 'census',
+          lat = lat,
+          long = long)
+westminster_export <- westminster_geocoded %>% 
+  arrange(lat, blurred_address)
+write_csv(westminster_export, "westminster_crime_geocoded.csv", na = "")
+
+
 ## CHINO
 chino_geocoded <- chino_address %>%
   geocode(street = street_address,
@@ -341,7 +395,7 @@ write_csv(chino_geocoded, "chino_crime_04132021_geocoded.csv", na = "")
 
 
 # VISUALIZE TO CHECK -----------------------------------------------------------
-sf <- palo_alto_export %>%
+sf <- westminster_export %>%
   filter(!is.na(lat)) %>%
   st_as_sf(coords=c("long", "lat"), crs=wgs)
 
