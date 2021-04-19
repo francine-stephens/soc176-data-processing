@@ -97,9 +97,12 @@ fremont <- read_csv(paste0(wd,
                      col_types = cols(incident_time = 'c')
 )
 
-chino <- read_csv(paste0(wd,
+chino1 <- read_csv(paste0(wd,
                    "/chino_crime_04132021.csv")
             )
+chino2 <- chino1 <- read_csv(paste0(wd,
+                                    "/chino_crime_04192021.csv")
+)
 
 
 # CLEAN UP OPEN DATA + SHAPEFILES & EXPORT -------------------------------------
@@ -377,6 +380,24 @@ fremont_date <- fremont %>%
   )
 
 
+## CHINO
+chino <- rbind(chino1, chino2)
+chino_date <- chino %>%
+  distinct(., .keep_all = TRUE) %>% 
+  rename(incident_datetime = "Date") %>% 
+  mutate(incident_date = as.Date(incident_datetime, format = "%m/%d/%Y", tz = "UTC"),
+         incident_month = month(incident_date, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(incident_date, label = TRUE, abbr = FALSE),
+         incident_time_24hr_clock = str_sub(incident_datetime, start = -5),
+         time_24hr_num = str_remove(incident_time_24hr_clock, ":"),
+         time_24hr_num = as.numeric(time_24hr_num),
+         time_ampm = if_else(time_24hr_num < 1159,
+                             "AM",
+                             "PM")
+  ) %>%  
+  select(-time_24hr_num)
+  
+
 # PROCESS ADDRESSES -----------------------------------------------------------
 ## OAKLAND
 oakland_address <- oakland_reduced %>%
@@ -388,6 +409,38 @@ write_csv(oakland_intersections, "oakland_crime_intersections.csv", na = "")
 oakland_blurred <- oakland_address %>%
   filter(blurred_address %notin% oakland_intersections$blurred_address)
 write_csv(oakland_blurred, "oakland_crime_blurred.csv", na = "")
+
+    ## OAKLAND CLEAN UP
+oakland_int_geocoded <- read_csv(paste0(wd,
+                          "/oakland_intersections_geocoded.csv")
+)
+oakland_blur_geocoded <- chino1 <- read_csv(paste0(wd,
+                                    "/oakland_blurred_address_geocoded.csv")
+)
+oakland_geocoded <- rbind(oakland_blur_geocoded, oakland_int_geocoded)
+
+oakland_export <- oakland_geocoded %>%
+  filter(X != 0, Y != 0) %>%
+  select(-Status:-IN_ZIP) %>%
+  rename(
+    zipcode = "Postal",
+    crimetype = "USER_crime",
+    datetime = "USER_datet",
+    incident_year = "USER_incid",
+    incident_month = "USER_inc_1",
+    incident_day_of_week = "USER_inc_2",
+    incident_time_24hr = "USER_inc_3",
+    incident_hour = "USER_inc_4",
+    casenumber = "USER_casen",
+    description = "USER_descr",
+    policebeat = "USER_polic",
+    address = "USER_addre", 
+    city = "USER_city",
+    state = "USER_state",
+    blurred_address = "USER_blurr"
+  ) %>%
+  filter(incident_year >= 2020)
+write_csv(oakland_export, "Oakland_crime_geocoded.csv", na = "")
 
 
 ## PALO ALTO
@@ -427,7 +480,7 @@ fremont_address <- fremont_date %>%
 
 
 ## CHINO
-chino_address <- chino %>%
+chino_address <- chino_date %>%
   mutate(
          street_address = str_replace(Location, "00 BLOCK", "50"),
          street_address = str_replace(street_address, "/", " & "),
@@ -502,11 +555,13 @@ chino_geocoded <- chino_address %>%
           method = 'census',
           lat = lat,
           long = long)
-write_csv(chino_geocoded, "chino_crime_04132021_geocoded.csv", na = "")
+chino_export <- chino_geocoded %>%  
+  arrange(lat, street_address)
+write_csv(chino_export, "chino_crime_geocoded2.csv", na = "")
 
 
 # VISUALIZE TO CHECK -----------------------------------------------------------
-sf <- fremont_export %>%
+sf <- chino_export %>%
   filter(!is.na(lat)) %>%
   st_as_sf(coords=c("long", "lat"), crs=wgs)
 
@@ -516,5 +571,5 @@ leaflet() %>%
   addCircleMarkers(
     data = sf,
     radius = 1,
-    label = ~blurred_address
+    label = ~street_address
   )
