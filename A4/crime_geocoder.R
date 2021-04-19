@@ -79,6 +79,10 @@ pitt <- read_csv(paste0(wd,
                          "/pittsburgh_crime_04132021.csv")
 )
 
+palo_alto <- read_csv(paste0(wd, 
+                             "/Jan_Mar_2021_Palo_Alto_Police_Department_report.csv")
+)
+
 chino <- read_csv(paste0(wd,
                    "/chino_crime_04132021.csv")
             )
@@ -232,6 +236,7 @@ oakland_reduced <- oakland %>%
            ) 
 
 
+# CLEAN UP DATE-TIMES IN CSVs---------------------------------------------------
 ## PITTSBURGH
 pitt_reduced <- pitt %>%
   filter(X != 0 & Y != 0) %>%
@@ -253,7 +258,27 @@ pitt_reduced <- pitt %>%
   ) 
 write_csv(pitt_reduced, "Pittsburgh_crime_geocoded.csv", na = "")
 
+palo_alto_date <- palo_alto %>%
+  mutate(incident_date = as.Date(str_sub(date, end = 10), format = "%m/%d/%Y"),
+         incident_month = month(incident_date, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(incident_date, label = TRUE, abbr = FALSE),
+         incident_time = str_sub(date, start = 13),
+         incident_hour = str_sub(incident_time, end = 1), 
+         incident_ampm = str_sub(incident_time, start = -2),
+         incident_hour = str_c(incident_hour, incident_ampm, sep = " ")
+  ) %>%
+  relocate(
+    ccn, 
+    date, 
+    incident_date, 
+    incident_month,
+    incident_day_of_week,
+    incident_time,
+    incident_hour, 
+    incident_ampm
+  )
 
+  
 
 # PROCESS ADDRESSES -----------------------------------------------------------
 ## OAKLAND
@@ -268,6 +293,16 @@ oakland_blurred <- oakland_address %>%
 write_csv(oakland_blurred, "oakland_crime_blurred.csv", na = "")
 
 
+## PALO ALTO
+palo_alto_address <- palo_alto_date %>%
+  mutate(blurred_address = str_replace(blocksizedAddress, "00 Block ", "50 "),
+         blurred_address = str_replace(blurred_address, "1 Block ", "15 "),
+         blurred_address = str_replace(blurred_address, "\\**", "")
+  ) %>%
+  filter(blurred_address != ".",
+         blurred_address != "UNKNOWN")
+  
+  
 ## CHINO
 chino_address <- chino %>%
   mutate(
@@ -279,6 +314,20 @@ chino_address <- chino %>%
 
 
 # GEOCODE & EXPORT--------------------------------------------------------------
+## PALO ALTO
+palo_alto_geocoded <- palo_alto_address %>%
+  geocode(street = blurred_address,
+          city = city,
+          state = state,
+          postalcode = postalCode,
+          method = 'census',
+          lat = lat,
+          long = long)
+palo_alto_export <- palo_alto_geocoded %>%
+  arrange(lat, blurred_address)
+write_csv(palo_alto_export, "palo_alto_crime_geocoded2.csv", na = "")
+
+
 ## CHINO
 chino_geocoded <- chino_address %>%
   geocode(street = street_address,
@@ -292,16 +341,17 @@ write_csv(chino_geocoded, "chino_crime_04132021_geocoded.csv", na = "")
 
 
 # VISUALIZE TO CHECK -----------------------------------------------------------
-sf <- denver_filtered
-  
+sf <- palo_alto_export %>%
+  filter(!is.na(lat)) %>%
+  st_as_sf(coords=c("long", "lat"), crs=wgs)
+
 
 leaflet() %>% 
-  addTiles(
-  ) %>%
+  addTiles() %>%
   addCircleMarkers(
     data = sf,
     radius = 1,
-    label = ~NEIGHBORHO
+    label = ~blurred_address
   )
 
 
