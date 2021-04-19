@@ -1,6 +1,6 @@
-Location Name,address,city,state,zip,lat,long,Eyes on the street,weblink
-Persia Triangle,,San Francisco,CA,94112,37.7749,-122.4194,Low,"https://www.google.com/maps/@37.7238583,-122.4361277,3a,75y,132.37h,90t/data=!3m7!1e1!3m5!1s0kLQT2ONaC0_jBIhvS9cLQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fpanoid%3D0kLQT2ONaC0_jBIhvS9cLQ%26cb_client%3Dsearch.revgeo_and_fetch.gps%26w%3D96%26h%3D64%26yaw%3D132.36511%26pitch%3D0%26thumbfov%3D100!7i16384!8i8192?hl=en"
-Kenny Alley Staircase,640 London St,San Francisco,CA,94112,37.7190908,-122.4404305,High,http://www.eagsf.org/kenny-alley.html
-Ever Upward Plaza,Geneva Ave & Mission St,San Francisco,CA,94112,37.716494,-122.4432109,High,
-Vacant lot,5059P Mission St,San Francisco,CA,94112,37.717544,-122.4420539,Low,"https://www.google.com/maps/place/5059P+Mission+St,+San+Francisco,+CA+94112/@37.7176992,-122.4400935,3a,75y,135.43h,84.08t/data=!3m7!1e1!3m5!1s6KIrv7jKCOLV4h1DZviNTg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fpanoid%3D6KIrv7jKCOLV4h1DZviNTg%26cb_client%3Dsearch.gws-prod.gps%26w%3D86%26h%3D86%26yaw%3D128.21692%26pitch%3D0%26thumbfov%3D100!7i16384!8i8192!4m5!3m4!1s0x808f7e9b46288797:0x544a2ef8d503ea9a!8m2!3d37.717544!4d-122.4398652"
-,,,,,,,,
+Location Name,Address,City,State,Zipcode,Eyes on the street,weblink
+Persia Triangle,4650 Mission St,San Francisco,CA,94112,Low,"https://www.google.com/maps/@37.7238583,-122.4361277,3a,75y,132.37h,90t/data=!3m7!1e1!3m5!1s0kLQT2ONaC0_jBIhvS9cLQ!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fpanoid%3D0kLQT2ONaC0_jBIhvS9cLQ%26cb_client%3Dsearch.revgeo_and_fetch.gps%26w%3D96%26h%3D64%26yaw%3D132.36511%26pitch%3D0%26thumbfov%3D100!7i16384!8i8192?hl=en"
+Kenny Alley Staircase,4969 Mission St,San Francisco,CA,94112,High,http://www.eagsf.org/kenny-alley.html
+Kenny Alley Staircase,640 London St,San Francisco,CA,94112,High,
+Ever Upward Plaza,5908 Mission St,San Francisco,CA,94112,High,
+Vacant lot,5059 Mission St,San Francisco,CA,94112,Low,"https://www.google.com/maps/place/5059P+Mission+St,+San+Francisco,+CA+94112/@37.7176992,-122.4400935,3a,75y,135.43h,84.08t/data=!3m7!1e1!3m5!1s6KIrv7jKCOLV4h1DZviNTg!2e0!6shttps:%2F%2Fstreetviewpixels-pa.googleapis.com%2Fv1%2Fthumbnail%3Fpanoid%3D6KIrv7jKCOLV4h1DZviNTg%26cb_client%3Dsearch.gws-prod.gps%26w%3D86%26h%3D86%26yaw%3D128.21692%26pitch%3D0%26thumbfov%3D100!7i16384!8i8192!4m5!3m4!1s0x808f7e9b46288797:0x544a2ef8d503ea9a!8m2!3d37.717544!4d-122.4398652"

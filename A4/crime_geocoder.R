@@ -3,7 +3,7 @@
 # 
 # AUTHOR: FRANCINE STEPHENS
 # DATE CREATED: 4/13/21
-# LAST UPDATED: 4/17/21
+# LAST UPDATED: 4/18/21
 #---------------------------------------------------
 
 
@@ -74,6 +74,10 @@ detroit <- st_read("https://opendata.arcgis.com/datasets/0825badfe6304620a998d16
 denver <- st_read(paste0(wd,
                          "/denver_crime_04132021/crime.shp")
                   )
+
+pitt <- read_csv(paste0(wd,
+                         "/pittsburgh_crime_04132021.csv")
+)
 
 chino <- read_csv(paste0(wd,
                    "/chino_crime_04132021.csv")
@@ -226,6 +230,29 @@ oakland_reduced <- oakland %>%
            incident_time_12hr,
            incident_hour
            ) 
+
+
+## PITTSBURGH
+pitt_reduced <- pitt %>%
+  filter(X != 0 & Y != 0) %>%
+  mutate(incident_year = year(INCIDENTTIME),
+         incident_month = month(INCIDENTTIME, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(INCIDENTTIME, label = TRUE, abbr = FALSE),
+         incident_time_12hr = format(INCIDENTTIME, '%I:%M %p'),
+         incident_hour = format(INCIDENTTIME, '%I %p')
+  ) %>%
+  relocate(PK,
+           CCR, 
+           HIERARCHY, 
+           INCIDENTTIME,
+           incident_year, 
+           incident_month,
+           incident_day_of_week,
+           incident_time_12hr,
+           incident_hour
+  ) 
+write_csv(pitt_reduced, "Pittsburgh_crime_geocoded.csv", na = "")
+
 
 
 # PROCESS ADDRESSES -----------------------------------------------------------
