@@ -92,6 +92,11 @@ epa <- read_csv(paste0(wd,
                 col_types = cols(incident_time = 'c')
 )
 
+fremont <- read_csv(paste0(wd, 
+                            "/fremont_crime_04132021.csv"), 
+                     col_types = cols(incident_time = 'c')
+)
+
 chino <- read_csv(paste0(wd,
                    "/chino_crime_04132021.csv")
             )
@@ -344,6 +349,34 @@ epa_date <- epa %>%
   )
 
 
+## FREMONT
+fremont_date <- fremont %>%
+  mutate(incident_date = as.Date(date_time, format = "%m/%d/%Y", tz = "UTC"),
+         incident_month = month(incident_date, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(incident_date, label = TRUE, abbr = FALSE)
+  ) %>%
+  separate(date_time, c("date", "time_24hr_clock"), sep = " ") %>% 
+  mutate(
+    time_24hr_num = str_remove(time_24hr_clock, ":"),
+    time_24hr_num = as.numeric(time_24hr_num),
+    time_ampm = if_else(time_24hr_num < 1159,
+                        "AM",
+                        "PM")
+  ) %>%  
+  select(-time_24hr_num) %>%
+  relocate(
+    type,
+    blurred_street,
+    date,
+    time_24hr_clock,
+    incident_date,
+    incident_month,
+    incident_day_of_week,
+    incident_time,
+    time_ampm
+  )
+
+
 # PROCESS ADDRESSES -----------------------------------------------------------
 ## OAKLAND
 oakland_address <- oakland_reduced %>%
@@ -384,6 +417,15 @@ epa_address <- epa_date %>%
   )
   
 
+## FREMONT 
+fremont_address <- fremont_date %>% 
+  mutate(blurred_address = str_replace(blurred_street, "00 BLOCK", "50"),
+         city = "Fremont",
+         state = "CA",
+         postalcode = 94536
+  )
+
+
 ## CHINO
 chino_address <- chino %>%
   mutate(
@@ -423,7 +465,7 @@ westminster_export <- westminster_geocoded %>%
 write_csv(westminster_export, "westminster_crime_geocoded.csv", na = "")
 
 
-## WESTMINSTER
+## EPA
 epa_geocoded <- epa_address %>%
   geocode(street = blurred_address,
           city = city,
@@ -435,6 +477,20 @@ epa_geocoded <- epa_address %>%
 epa_export <- epa_geocoded %>%  
   arrange(lat, blurred_address)
 write_csv(epa_export, "East_Palo_Alto_crime_geocoded.csv", na = "")
+
+
+## FREMONT
+fremont_geocoded <- fremont_address %>%
+  geocode(street = blurred_address,
+          city = city,
+          state = state,
+          postalcode = postalcode,
+          method = 'census',
+          lat = lat,
+          long = long)
+fremont_export <- fremont_geocoded %>%  
+  arrange(lat, blurred_address)
+write_csv(fremont_export, "Fremont_crime_geocoded.csv", na = "")
 
 
 ## CHINO
@@ -450,7 +506,7 @@ write_csv(chino_geocoded, "chino_crime_04132021_geocoded.csv", na = "")
 
 
 # VISUALIZE TO CHECK -----------------------------------------------------------
-sf <- westminster_export %>%
+sf <- fremont_export %>%
   filter(!is.na(lat)) %>%
   st_as_sf(coords=c("long", "lat"), crs=wgs)
 
@@ -462,5 +518,3 @@ leaflet() %>%
     radius = 1,
     label = ~blurred_address
   )
-
-
