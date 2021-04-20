@@ -39,6 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # CSV & Shapefiles
+soc176_shapes/*
 
 A4/denver_crime_04132021/*
 A4/SF_crime_geocoded.csv
