@@ -39,6 +39,7 @@ vignettes/*.pdf
 .Renviron
 
 # CSV & Shapefiles
+
 A4/denver_crime_04132021/*
 A4/SF_crime_geocoded.csv
 A4/Kansas_City_crime_geocoded.csv
@@ -50,3 +51,8 @@ A4/Denver_crime_geocoded.csv
 A4/Oakland_*
 A4/oakland_*
 A4/oakland_crime_shp/*
+
+A5/nhgis0025_shapefile_tl2000_us_tract_1940/*
+A5/nhgis0025_shapefile_tl2008_us_tract_1940/*
+A5/nhgis0026_shapefile_tl2000_us_tract_1970/*
+A5/nhgis0026_shapefile_tl2008_us_tract_1970/*
