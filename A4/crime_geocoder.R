@@ -108,6 +108,11 @@ sjc <- read_csv(paste0(wd,
                        "/san_jose_crime_041921.csv")
 )
 
+bakersfield <- read_csv(paste0(wd,
+                               "/bakersfield_crime_04192021.csv")
+)
+
+
 
 # CLEAN UP OPEN DATA + SHAPEFILES & EXPORT -------------------------------------
 ## SF
@@ -402,7 +407,7 @@ chino_date <- chino %>%
   select(-time_24hr_num)
   
 
-## SJC
+## SJ
 sj_date <- sjc %>%
   distinct(., .keep_all = TRUE) %>% 
   rename(incident_datetime = "Date") %>% 
@@ -417,6 +422,22 @@ sj_date <- sjc %>%
                              "PM")
   ) %>%  
   select(-time_24hr_num, -X6:-X7)
+
+
+## BAKERSFIELD
+bakersfield_date <- bakersfield %>%
+  rename(incident_datetime = "Date") %>% 
+  mutate(incident_date = as.Date(incident_datetime, format = "%m/%d/%Y", tz = "UTC"),
+         incident_month = month(incident_date, label = TRUE, abbr = FALSE),
+         incident_day_of_week = wday(incident_date, label = TRUE, abbr = FALSE),
+         incident_time_24hr_clock = str_sub(incident_datetime, start = -5),
+         time_24hr_num = str_remove(incident_time_24hr_clock, ":"),
+         time_24hr_num = as.numeric(time_24hr_num),
+         time_ampm = if_else(time_24hr_num < 1159,
+                             "AM",
+                             "PM")
+  ) %>%  
+  select(-time_24hr_num)
 
 
 
@@ -511,7 +532,7 @@ chino_address <- chino_date %>%
          ) 
 
 
-## SJC
+## SJ
 sj_address <- sj_date %>%
   mutate(
     street_address = str_replace(Location, "00 BLK", "50"),
@@ -520,6 +541,18 @@ sj_address <- sj_date %>%
     city = "San Jose",
     state = "CA"
   )
+
+
+## BAKERSFIELD
+bakersfield_address <- bakersfield_date %>%
+  mutate(
+    street_address = str_replace(Location, "00 BLK", "50"),
+    street_address = str_replace(street_address, "/", "&"),
+    city = "Bakersfield",
+    state = "CA",
+    postalcode = 93301
+  ) 
+
 
 
 # GEOCODE & EXPORT--------------------------------------------------------------
@@ -607,8 +640,23 @@ sj_export <- sj_geocoded %>%
 write_csv(sj_export, "san_jose_crime_geocoded.csv", na = "")
 
 
+## BAKERSFIELD
+bakersfield_geocoded <- bakersfield_address %>%
+  geocode(street = street_address,
+          city = city,
+          state = state,
+          postalcode = postalcode,
+          method = 'census',
+          lat = lat,
+          long = long)
+bakersfield_export <- bakersfield_geocoded %>%  
+  arrange(lat, street_address)
+write_csv(bakersfield_export, "Bakersfield_crime_geocoded.csv", na = "")
+
+
+
 # VISUALIZE TO CHECK -----------------------------------------------------------
-sf <- sj_export %>%
+sf <- bakersfield_export %>%
   filter(!is.na(lat)) %>%
   st_as_sf(coords=c("long", "lat"), crs=wgs)
 
