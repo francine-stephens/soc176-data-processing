@@ -17,7 +17,8 @@ packages <- c(
   "tigris",
   "censusapi", 
   "tidycensus", 
-  "leaflet"
+  "leaflet",
+  "lubridate"
 )
 lapply(packages, library, character.only = T)
 
@@ -46,7 +47,7 @@ census_tracts <- st_read(paste0(shp_repo,
                          quiet = F)
 
 state_codes <- c(state.abb, "DC")
-us_tracts <- map_df(state_codes, ~tracts(state = .x, cb = TRUE))
+us_tracts <- map_df(state_codes, ~tracts(state = .x, cb = FALSE))
 us_places <- map_df(state_codes, ~places(state = .x, cb = TRUE))
 
     ## LTDB
@@ -145,9 +146,23 @@ tracts10_demogs_places <- tracts10_demogs %>%
   mutate(tractid = str_pad(tractid, width = 11, side = "left", pad = "0")
          ) %>% 
   filter(tractid %in% tracts00_demogs_places$TRTID10) %>%
-  select(tractid:hisp10)
+  select(tractid:hisp10) %>% 
+  rename_at(.vars = vars(ends_with("10")),
+            .funs = funs(sub("10", "", .))) %>%
+  rename(GEOID10 = "tractid") %>% 
+  mutate(year = "01/01/2010",
+         year = as.Date(year, format = "%m/%d/%Y")
+         ) %>% 
+  relocate(year, GEOID10) %>%
+  rename_with(toupper, pop:hisp) %>%
+  mutate(NONWHT = (NHBLK + NTV + ASIAN + HISP)
+         )
 
-class_tracts_in_places_time <- census_tracts %>%
+  
+  
+## STACK ALL DATASETS
+class_tracts_in_places_time <- census_tracts %>% 
+  select(STATEFP10:GEOID10, GISJOIN) %>%
   right_join(., tracts10_demogs_places, by = c("GEOID10" = "tractid"))
 
 
