@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/20/21
-# LAST UPDATED: 4/23/21
+# LAST UPDATED: 4/24/21
 #-------------------------------------------------------------------------------
 
 
@@ -338,19 +338,93 @@ all_decades_race_tracts_class_shp <- census_tracts %>%
 
 # EXPORT CITY-PLACES -----------------------------------------------------------
 
+## SF
 sf_tracts <- all_decades_race_tracts_class_shp %>%
-  filter(county == "San Francisco County")
-st_write(sf_tracts, "sf_tracts_race.shp")
+  filter(county == "San Francisco County") %>%
+  filter(GEOID10 != "06075980401")
+st_write(sf_tracts, "san_francisco_tracts_race.shp")
+
+## LA
+la_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(county == "Los Angeles County")
+st_write(la_tracts, "los_angeles_tracts_race.shp")
+
+## Oakland
+oakland_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0653000")
+st_write(oakland_tracts, "oakland_tracts_race.shp")
+
+## Fremont
+fremont_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0626000")
+st_write(fremont_tracts, "fremont_tracts_race.shp")
+
+## Bakersfield
+bakersfield_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "063526")
+st_write(bakersfield_tracts, "bakersfield_tracts_race.shp")
+
+## Westminster
+westminster_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0684550")
+st_write(westminster_tracts, "westminster_tracts_race.shp")
+
+## Chino
+chino_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0613210")
+st_write(chino_tracts, "chino_tracts_race.shp")
+
+## San Mateo
+san_mateo_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0668252")
+st_write(san_mateo_tracts, "san_mateo_tracts_race.shp")
+
+## East Palo Alto
+epa_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0620956")
+st_write(epa_tracts, "east_palo_alto_tracts_race.shp")
+
+## San Jose 
+sj_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0668000")
+st_write(sj_tracts, "san_jose_tracts_race.shp")
+
+## Palo Alto
+pa_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0655282")
+st_write(pa_tracts, "palo_alto_tracts_race.shp")
+
+## Denver
+denver_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "0820000")
+st_write(denver_tracts, "denver_tracts_race.shp")
+
+## Detroit
+detroit_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "2622000")
+st_write(detroit_tracts, "detroit_tracts_race.shp")
+
+## Kansas City
+kc_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "2938000")
+st_write(kc_tracts, "kansas_city_tracts_race.shp")
+
+## Pittsburgh
+pitt_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "4261000")
+st_write(pitt_tracts, "pittsburgh_tracts_race.shp")
+
+## Yakima
+yakima_tracts <- all_decades_race_tracts_class_shp %>%
+  filter(state_place == "5380010")
+st_write(yakima_tracts, "yakima_tracts_race.shp")
 
 
 # test the tracts shapefile
 leaflet() %>%
   addTiles() %>%
   addPolygons(data = all_decades_race_tracts_class_shp %>% 
-                filter(county == "San Francisco County") %>%
                 st_transform(., crs = 4326),
               label = ~(GEOID10)
   )
-
-
 
