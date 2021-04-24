@@ -198,7 +198,8 @@ tracts80_demogs_places <- tracts80_demogs %>%
            county,
            state_place,
            tract) %>% 
-  rename(HISPANIC = "HISP",
+  rename(NHWHITE = "NHWHT",
+         HISPANIC = "HISP",
          NATIVE = "NTV",
          NHBLACK = "NHBLK") %>%  
   mutate(NONWHITE = (NHBLACK + NATIVE + ASIAN + HISPANIC)
@@ -222,7 +223,8 @@ tracts90_demogs_places <- tracts90_demogs %>%
            county,
            state_place,
            tract) %>%
-  rename(HISPANIC = "HISP",
+  rename(NHWHITE = "NHWHT",
+         HISPANIC = "HISP",
          NATIVE = "NTV",
          NHBLACK = "NHBLK") %>%  
   mutate(NONWHITE = (NHBLACK + NATIVE + ASIAN + HISPANIC)
@@ -246,7 +248,8 @@ tracts00_demogs_places <- tracts00_demogs %>%
            county,
            state_place,
            tract) %>%
-  rename(HISPANIC = "HISP",
+  rename(NHWHITE = "NHWHT",
+         HISPANIC = "HISP",
          NATIVE = "NTV",
          NHBLACK = "NHBLK") %>%  
   mutate(NONWHITE = (NHBLACK + NATIVE + ASIAN + HISPANIC)
@@ -255,12 +258,12 @@ tracts00_demogs_places <- tracts00_demogs %>%
 
 ## 2010
 tracts_state_place_ids <- tracts00_demogs_places %>%
-  select(GEOID10:state_place)
+  select(GEOID10, statefp, state_place)
 
 tracts10_demogs_places <- tracts10_demogs %>%
   mutate(tractid = str_pad(tractid, width = 11, side = "left", pad = "0")
          ) %>% 
-  filter(tractid %in% tracts00_demogs_places$TRTID10) %>%
+  filter(tractid %in% tracts00_demogs_places$GEOID10) %>%
   select(tractid:hisp10) %>% 
   left_join(., tracts_state_place_ids, by = c("tractid" = "GEOID10")) %>%
   rename_at(.vars = vars(ends_with("10")),
@@ -271,21 +274,57 @@ tracts10_demogs_places <- tracts10_demogs %>%
          ) %>% 
   relocate(year,
            GEOID10,
-           state,
            statefp,
-           county,
            state_place,
            tract) %>%
   rename_with(toupper, pop:hisp) %>%
-  rename(HISPANIC = "HISP",
+  rename(NHWHITE = "NHWHT",
+         HISPANIC = "HISP",
          NATIVE = "NTV",
          NHBLACK = "NHBLK") %>%  
   mutate(NONWHITE = (NHBLACK + NATIVE + ASIAN + HISPANIC)
   )
 
+
+## 2020
+tracts_state_place_ids <- tracts00_demogs_places %>%
+  select(GEOID10: state_place)
+
+tracts20_demogs_places <- tracts20_demogs %>% 
+  mutate(GEOID10 = str_pad(Geo_FIPS, width = 11, side = "left", pad = "0"), 
+         tract = as.character(Geo_TRACT),
+         tract = paste0("Census Tract ", tract),
+         year = "01/31/2020",
+         year = as.Date(year, format = "%m/%d/%Y"),
+         ASIAN = (AA + NHPI),
+         NONWHITE = (NHBLK + NATIVE + ASIAN + HISPANIC) 
+  ) %>% 
+  select(-Geo_FIPS) %>%
+  filter(GEOID10 %in% tracts00_demogs_places$GEOID10) %>% 
+  left_join(., tracts_state_place_ids, by =  "GEOID10") %>%
+  rename(NHWHITE = "NHWHT",
+         NHBLACK = "NHBLK") %>%
+  select(-Geo_GEOID: -Geo_TRACT, -AA:-NHPI) %>%
+  relocate(year,
+           GEOID10,
+           statefp,
+           state_place,
+           tract, 
+           state,
+           county,
+           POP,
+           NHWHITE,
+           NHBLACK,
+           NATIVE,
+           ASIAN,
+           HISPANIC,
+           NONWHITE)
+  
+  
   
 ## STACK ALL DATASETS
 all_decades_race_tracts <- bind_rows(
+  tracts20_demogs_places,
   tracts10_demogs_places, 
   tracts00_demogs_places,
   tracts90_demogs_places,
@@ -307,9 +346,10 @@ st_write(sf_tracts, "sf_tracts_race.shp")
 # test the tracts shapefile
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = class_tracts_in_places_time %>%
+  addPolygons(data = all_decades_race_tracts_class_shp %>% 
+                filter(county == "San Francisco County") %>%
                 st_transform(., crs = 4326),
-              label = ~(county)
+              label = ~(GEOID10)
   )
 
 
