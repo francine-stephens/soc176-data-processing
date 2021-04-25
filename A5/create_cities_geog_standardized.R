@@ -18,7 +18,8 @@ packages <- c(
   "censusapi", 
   "tidycensus", 
   "leaflet",
-  "lubridate"
+  "lubridate",
+  "rsegregation"
 )
 lapply(packages, library, character.only = T)
 
@@ -156,7 +157,13 @@ tracts70_demogs_places <- tracts70_demogs %>%
   rename(GEOID10 = "TRTID10",
          NHBLK = "BLACK") %>% 
   left_join(., tracts70_supp_modified, by = "GEOID10") %>%
-  mutate(NHWHITE = (WHITE - SPANISH)
+  mutate(NHWHITE = (WHITE - SPANISH),
+         SPANISH = if_else(NHWHITE < 0,
+                           0,
+                           SPANISH),
+         NHWHITE = if_else(NHWHITE < 0,
+                           WHITE,
+                           NHWHITE)
          ) %>%
   rename(HISPANIC = "SPANISH",
          NHBLACK = "NHBLK") %>%  
@@ -320,7 +327,7 @@ tracts20_demogs_places <- tracts20_demogs %>%
            HISPANIC,
            NONWHITE)
   
-  
+
   
 ## STACK ALL DATASETS
 all_decades_race_tracts <- bind_rows(
@@ -332,17 +339,212 @@ all_decades_race_tracts <- bind_rows(
   tracts70_demogs_places
 )
 
+all_decades_race_tracts_prop <- all_decades_race_tracts %>%
+  mutate_at(vars(NHWHITE:HISPANIC), funs("PR" = (./POP))) %>%
+  mutate(OTHER_PR = 1.0 - (NHWHITE_PR + NHBLACK_PR + NATIVE_PR + ASIAN_PR + HISPANIC_PR)
+         )
+
+all_decades_race_tracts_seg <- all_decades_race_tracts_prop
+
 all_decades_race_tracts_class_shp <- census_tracts %>% 
   select(GEOID10) %>%
   right_join(., all_decades_race_tracts, by = "GEOID10")
 
+
+## COMPUTE PLACE RACE TOTALS
+place_city_name_link <- class_places %>%
+  st_set_geometry(NULL) %>%
+  select(city, state_place) %>%
+  distinct() %>%
+  filter(city != "East Palo Alto/Menlo Park")
+
+all_decades_race_city <- all_decades_race_tracts %>%
+  select(year, state_place, POP:NONWHITE) %>%
+  group_by(year, state_place) %>%
+  summarize_all(sum, na.rm = TRUE) %>%
+  rename_at(vars(-year, -state_place), function(x) paste0(x,"_CITY")) %>% 
+  left_join(., place_city_name_link, by = "state_place") %>%
+  relocate(city, .after = "state_place")
+  
+
+## COMPUTE DISSIMILARITY
+all_decades_city_dissim_scores <- all_decades_race_tracts %>% 
+  select(GEOID10, year, state_place, POP:NONWHITE) %>%
+  left_join(., all_decades_race_city, by = c("year", "state_place")) %>%
+  mutate(DISS_NWW=abs(NONWHITE/NONWHITE_CITY - NHWHITE/NHWHITE_CITY),
+         DISS_BW=abs(NHBLACK/NHBLACK_CITY - NHWHITE/NHWHITE_CITY),
+         DISS_AW=abs(ASIAN/ASIAN_CITY - NHWHITE/NHWHITE_CITY),
+         DISS_HW=abs(HISPANIC/HISPANIC_CITY - NHWHITE/NHWHITE_CITY),
+         DISS_BA=abs(NHBLACK/NHBLACK_CITY - ASIAN/ASIAN_CITY),
+         DISS_BH=abs(NHBLACK/NHBLACK_CITY - HISPANIC/HISPANIC_CITY),
+         DISS_AH=abs(ASIAN/ASIAN_CITY - HISPANIC/HISPANIC_CITY)
+         ) %>%
+  group_by(year, state_place, city) %>%
+  summarise(DISSIM_NWW = .5*sum(DISS_NWW, na.rm=T),
+            DISSIM_BW= .5*sum(DISS_BW, na.rm=T),
+            DISSIM_AW = .5*sum(DISS_AW, na.rm=T),
+            DISSIM_HW= .5*sum(DISS_HW, na.rm=T),
+            DISSIM_BA = .5*sum(DISS_BA, na.rm=T),
+            DISSIM_BH = .5*sum(DISS_BH, na.rm=T),
+            DISSIM_AH = .5*sum(DISS_AH, na.rm=T)
+  ) %>% 
+  mutate_at(vars(DISSIM_NWW:DISSIM_AH),
+            .funs = funs(. * 100)) %>%
+  arrange(city, year)
+
+cities_shp <- census_tracts %>% 
+  select(GEOID10) %>%
+  right_join(., all_decades_race_tracts, by = "GEOID10") %>% 
+  filter(year == "2010-01-31") %>%
+  left_join(., place_city_name_link, by = "state_place") %>%
+  group_by(city, state_place) %>%
+  summarize(n_tracts = n())
+
+all_decades_city_dissim_shp <- cities_shp %>%
+  right_join(., all_decades_city_dissim_scores, by = c("state_place", "city"))
+
+
 # EXPORT CITY-PLACES -----------------------------------------------------------
 
 ## SF
+  # RACE COMP
 sf_tracts <- all_decades_race_tracts_class_shp %>%
   filter(county == "San Francisco County") %>%
   filter(GEOID10 != "06075980401")
 st_write(sf_tracts, "san_francisco_tracts_race.shp")
+
+  # DISSIM
+<- all_decades_city_dissim_shp %>%
+  filter(city == "San Francisco") %>%
+  
+
+sf_tracts_pr <- all_decades_race_tracts_seg %>% 
+  filter(county == "San Francisco County") %>%
+  mutate_at(vars(NHWHITE:HISPANIC), funs("PR" = (./POP))) %>%
+  mutate(OTHER_PR = 1.0 - (NHWHITE_PR + NHBLACK_PR + NATIVE_PR + ASIAN_PR + HISPANIC_PR)
+  )
+
+sf_tracts_pr_2020 <- sf_tracts_pr %>%
+  filter(year > "2020-01-01") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                                  NHBLACK_PR, 
+                                  NATIVE_PR, 
+                                  ASIAN_PR, 
+                                  HISPANIC_PR, 
+                                  population = POP,
+                                  summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+         )
+
+sf_tracts_pr_2010 <- sf_tracts_pr %>%
+  filter(year == "2010-01-31") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                           NHBLACK_PR, 
+                           NATIVE_PR, 
+                           ASIAN_PR, 
+                           HISPANIC_PR, 
+                           population = POP,
+                           summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+  )
+
+sf_tracts_pr_2000 <- sf_tracts_pr %>%
+  filter(year == "2000-01-31") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                           NHBLACK_PR, 
+                           NATIVE_PR, 
+                           ASIAN_PR, 
+                           HISPANIC_PR, 
+                           population = POP,
+                           summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+  )
+
+sf_tracts_pr_1990 <- sf_tracts_pr %>%
+  filter(year == "1990-01-31") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                           NHBLACK_PR, 
+                           NATIVE_PR, 
+                           ASIAN_PR, 
+                           HISPANIC_PR, 
+                           population = POP,
+                           summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+  )
+
+sf_tracts_pr_1980 <- sf_tracts_pr %>%
+  filter(year == "1980-01-31") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                           NHBLACK_PR, 
+                           NATIVE_PR, 
+                           ASIAN_PR, 
+                           HISPANIC_PR, 
+                           population = POP,
+                           summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+  )
+
+sf_tracts_pr_1970 <- sf_tracts_pr %>%
+  filter(year == "1970-01-31") %>%
+  mutate(entropy = entropy(NHWHITE_PR,
+                           NHBLACK_PR, 
+                           NATIVE_PR, 
+                           ASIAN_PR, 
+                           HISPANIC_PR, 
+                           population = POP,
+                           summed = FALSE)
+  ) %>%
+  ungroup() %>%
+  mutate(entropy = na_if(entropy, 0),
+         divergence = na_if(divergence, 0),
+         divergence = if_else(divergence <0, 
+                              0, 
+                              divergence)
+  )
+
+sf_tracts_all_decades_seg <- bind_rows(sf_tracts_pr_1970,
+          sf_tracts_pr_1980,
+          sf_tracts_pr_1990,
+          sf_tracts_pr_2000,
+          sf_tracts_pr_2010,
+          sf_tracts_pr_2020
+          )
+
+sf_tracts_all_decades_seg_exp <- census_tracts %>% 
+  select(GEOID10) %>%
+  right_join(., sf_tracts_all_decades_seg, by = "GEOID10") %>% 
+  select(GEOID10, year:POP, NHWHITE_PR:divergence)
+  
 
 ## LA
 la_tracts <- all_decades_race_tracts_class_shp %>%
@@ -358,6 +560,36 @@ st_write(oakland_tracts, "oakland_tracts_race.shp")
 fremont_tracts <- all_decades_race_tracts_class_shp %>%
   filter(state_place == "0626000")
 st_write(fremont_tracts, "fremont_tracts_race.shp")
+
+fremont_tracts_pr <- all_decades_race_tracts_seg %>%
+  filter(state_place == "0626000") %>% 
+  mutate_at(vars(NHWHITE:HISPANIC), funs("PR" = (./POP))) %>%
+  mutate(OTHER_PR = 1.0 - (NHWHITE_PR + NHBLACK_PR + NATIVE_PR + ASIAN_PR + HISPANIC_PR)
+  )
+
+fremont_tracts_pr$entropy <- entropy(
+  fremont_tracts_pr$NHWHITE_PR,
+  fremont_tracts_pr$NHBLACK_PR,
+  fremont_tracts_pr$NATIVE_PR,
+  fremont_tracts_pr$ASIAN_PR,
+  fremont_tracts_pr$HISPANIC_PR,
+  population = fremont_tracts_pr$POP,
+  summed = FALSE)
+  
+
+fremont_tracts_pr_2020 <- fremont_tracts_pr %>%
+  filter(year > "2020-01-01") %>%
+  mutate(divergence2 = divergence(NHWHITE_PR,
+                            NHBLACK_PR, 
+                            NATIVE_PR, 
+                            ASIAN_PR, 
+                            HISPANIC_PR, 
+                            population = POP,
+                            summed = FALSE)
+  ) %>%
+  ungroup()
+
+rbind()
 
 ## Bakersfield
 bakersfield_tracts <- all_decades_race_tracts_class_shp %>%
@@ -420,6 +652,16 @@ yakima_tracts <- all_decades_race_tracts_class_shp %>%
 st_write(yakima_tracts, "yakima_tracts_race.shp")
 
 
+
+# EXPORT DISSIM INDEX-----------------------------------------------------------
+# DISSIM
+sf_dissim <- all_decades_city_dissim_shp %>%
+  filter(city == "San Francisco")
+st_write(sf_dissim, "san_francisco_dissimilarity.shp")
+
+
+ 
+  
 # test the tracts shapefile
 leaflet() %>%
   addTiles() %>%
