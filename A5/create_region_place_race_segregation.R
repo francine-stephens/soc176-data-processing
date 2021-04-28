@@ -557,7 +557,8 @@ tracts70_demogs_bay <- tracts70_demogs %>%
          NATIVE,
          ASIAN,
          HISPANIC,
-         NONWHITE)  # ADD cbsa10 for other regions
+         NONWHITE,
+         GEOID10)  # ADD cbsa10 for other regions
 
 places70_race_bay <- tracts70_demogs_bay %>%
   aggregate_to_places_in_region(.) %>%
@@ -585,15 +586,6 @@ tracts70_demogs_regions <- tracts70_demogs %>%
          GEOID10)  %>% 
   filter(cbsa10 != "49420")
 
-places70_race_regions <- tracts70_demogs_bay %>%
-  aggregate_to_places_in_region(.) %>%
-  mutate(NATIVE = na_if(NATIVE, 0)) %>%
-  left_join(., ca_places, by = c("placefp10" = "PLACEFP")
-  ) %>%
-  relocate(NAME, .after = place_id) %>%
-  mutate(NAME = coalesce(NAME, place_id)) %>%
-  select(-STATEFP)
-
 
 ## 1980
 tracts80_demogs_bay <- tracts80_demogs %>%
@@ -603,7 +595,8 @@ tracts80_demogs_bay <- tracts80_demogs %>%
   ) %>%  
   rename_at(.vars = vars(ends_with("80")),
             .funs = funs(sub("80", "", .))) %>%
-  demog_formatting_tract80plus_level(.)
+  demog_formatting_tract80plus_level(.) %>%
+  select(-cbsa10)
 
 tracts80_demogs_regions <- tracts80_demogs %>%
   get_tracts_in_regions(.) %>%
@@ -614,13 +607,14 @@ tracts80_demogs_regions <- tracts80_demogs %>%
             .funs = funs(sub("80", "", .))) %>%
   demog_formatting_tract80plus_level(.)
 
-places80_race_bay <- tracts80_demogs_bay %>%
+places80_race_bay <- tracts80_demogs_bay %>% 
+  select(-GEOID10) %>%
   aggregate_to_places_in_region(.) %>%
   left_join(., ca_places, by = c("placefp10" = "PLACEFP")
   ) %>%
   relocate(NAME, .after = place_id) %>% 
   mutate(NAME = coalesce(NAME, place_id)) %>%
-  select(-STATEFP)
+  select(-STATEFP, -cbsa10)
 
 ## 1990
 tracts90_demogs_bay <- tracts90_demogs %>%
@@ -630,7 +624,8 @@ tracts90_demogs_bay <- tracts90_demogs %>%
   ) %>%  
   rename_at(.vars = vars(ends_with("90")),
             .funs = funs(sub("90", "", .))) %>%
-  demog_formatting_tract80plus_level(.)
+  demog_formatting_tract80plus_level(.) %>%
+  select(-cbsa10)
 
 tracts90_demogs_regions <- tracts90_demogs %>%
   get_tracts_in_regions(.) %>%
@@ -642,12 +637,13 @@ tracts90_demogs_regions <- tracts90_demogs %>%
   demog_formatting_tract80plus_level(.)
 
 places90_race_bay <- tracts90_demogs_bay %>%
+  select(-GEOID10) %>%
   aggregate_to_places_in_region(.) %>%
   left_join(., ca_places, by = c("placefp10" = "PLACEFP")
   ) %>%
   relocate(NAME, .after = place_id) %>% 
   mutate(NAME = coalesce(NAME, place_id)) %>%
-  select(-STATEFP)
+  select(-STATEFP, -cbsa10)
 
 ## 2000
 tracts00_demogs_bay <- tracts00_demogs %>%
@@ -657,7 +653,8 @@ tracts00_demogs_bay <- tracts00_demogs %>%
   ) %>%  
   rename_at(.vars = vars(ends_with("00")),
             .funs = funs(sub("00", "", .))) %>%
-  demog_formatting_tract80plus_level(.)
+  demog_formatting_tract80plus_level(.) %>%
+  select(-cbsa10)
 
 tracts00_demogs_regions <- tracts00_demogs %>%
   get_tracts_in_regions(.) %>%
@@ -668,13 +665,14 @@ tracts00_demogs_regions <- tracts00_demogs %>%
             .funs = funs(sub("00", "", .))) %>%
   demog_formatting_tract80plus_level(.)
 
-places00_race_bay <- tracts00_demogs_bay %>%
+places00_race_bay <- tracts00_demogs_bay %>% 
+  select(-GEOID10) %>%
   aggregate_to_places_in_region(.) %>% 
   left_join(., ca_places, by = c("placefp10" = "PLACEFP")
   ) %>%
   relocate(NAME, .after = place_id) %>% 
   mutate(NAME = coalesce(NAME, place_id)) %>%
-  select(-STATEFP)
+  select(-STATEFP, -cbsa10)
 
 ## 2010
 tracts_place_ids_bay <- tracts00_demogs %>%
@@ -713,7 +711,6 @@ tracts10_demogs_bay <- tracts10_demogs %>%
   mutate(NONWHITE = (NHBLACK + NATIVE + ASIAN + HISPANIC)
   ) %>%
   relocate(year,
-           GEOID10,
            place_id,
            placefp,
            POP,
@@ -722,8 +719,9 @@ tracts10_demogs_bay <- tracts10_demogs %>%
            NATIVE, 
            ASIAN, 
            HISPANIC, 
-           NONWHITE) %>%
-  select(-GEOID10, -state:-tract) %>%
+           NONWHITE, 
+           GEOID10) %>%
+  select(-state:-tract) %>%
   rename(placefp10 = "placefp")
 
 tracts10_demogs_regions <- tracts10_demogs %>%
@@ -784,7 +782,6 @@ tracts20_demogs_bay <- tracts20_demogs %>%
          NHBLACK = "NHBLK") %>%
   select(-Geo_FIPS, -AA:-NHPI, -Geo_GEOID, -Geo_TRACT, -tract) %>%
   relocate(year,
-           GEOID10,
            place_id, 
            placefp10,
            POP,
@@ -793,7 +790,8 @@ tracts20_demogs_bay <- tracts20_demogs %>%
            NATIVE, 
            ASIAN, 
            HISPANIC, 
-           NONWHITE)
+           NONWHITE,
+           GEOID10)
 
 tracts20_demogs_regions <- tracts20_demogs %>% 
   mutate(GEOID10 = str_pad(Geo_FIPS, width = 11, side = "left", pad = "0"), 
@@ -831,6 +829,14 @@ places20_race_bay <- tracts20_demogs_bay %>%
 
 
 ## STACK ALL DATASETS
+all_decades_race_tracts_bay <-  bind_rows(
+  tracts70_demogs_bay,
+  tracts80_demogs_bay,
+  tracts90_demogs_bay,
+  tracts00_demogs_bay,
+  tracts10_demogs_bay,
+  tracts20_demogs_bay
+)
 all_decades_race_places_bay <- bind_rows(
   places70_race_bay,
   places80_race_bay,
@@ -851,14 +857,6 @@ all_decades_race_tracts_regions <- bind_rows(
 )
 
   ## AGGREGATE TO PLACES
-# state_place_ids_regions <- tracts_place_ids_regions %>%
-#   mutate(placefp10 = as.character(placefp10),
-#   placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0"),
-#   statefp = substr(GEOID10, start = 1, stop = 2)
-# ) %>%
-#   select(-GEOID10) %>%
-#   distinct(placefp10, place_id, statefp)
-
 all_decades_race_places_regions <- all_decades_race_tracts_regions %>% 
   mutate(placefp10 = as.character(placefp10),
          placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0"),
@@ -1061,235 +1059,429 @@ st_write(yakima_all_decades_race_places_shp, "Yakima_Region_places_race.shp")
 # REGION DISSIMILARITY----------------------------------------------------------
 
 ## COMPUTE REGION RACE TOTALS
-all_decades_race_region <- all_decades_race_places %>%
-  select(-place_id:-placefp10) %>%
-  group_by(year) %>%
-  summarize_all(sum, na.rm = TRUE) %>%
-  rename_at(vars(-year), function(x) paste0(x,"_REGION"))
+compute_race_totals_for_region_by_decade <- function(x) { 
+  x %>%       
+    select(-place_id, -placefp10, -statefp, -NAME, -cbsa10) %>%
+    group_by(year) %>%
+    summarize_all(sum, na.rm = TRUE) %>%
+    rename_at(vars(-year), function(x) paste0(x,"_REGION"))
+}
 
+all_decades_race_bay <- all_decades_race_places_bay %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_la <- la_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.) %>%
+  filter(!is.na(year))
+
+all_decades_race_baker <- baker_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_river <- river_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_denver <- denver_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_detroit <- detroit_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_kc <- kc_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_pitt <- pitt_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+all_decades_race_yakima <- yakima_all_decades_places %>%
+  compute_race_totals_for_region_by_decade(.)
+
+
+## RENAME PLACE RACE TOTALS
+rename_place_totals <- function(x) { 
+  x %>%       
+    rename_at(vars(POP:NONWHITE), function(x) paste0(x,"_PLACE"))
+}
+
+all_decades_race_places_bay_d <- all_decades_race_places_bay %>%
+  rename_place_totals(.)
+
+all_decades_race_places_la_d <- la_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_baker_d <- baker_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_river_d <- river_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_denver_d <- denver_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_detroit_d <- detroit_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_kc_d <- kc_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_pitt_d <- pitt_all_decades_places %>%
+  rename_place_totals(.)
+
+all_decades_race_places_yakima_d <- yakima_all_decades_places %>%
+  rename_place_totals(.)
 
 ## COMPUTE DISSIMILARITY
-all_decades_places_dissim_scores <- all_decades_race_places %>% 
-  select(year, placefp10, NAME, POP:NONWHITE) %>%
-  left_join(., all_decades_race_region, by = c("year")) %>%
-  mutate(D_NWW=abs(NONWHITE/NONWHITE_REGION - NHWHITE/NHWHITE_REGION),
-         D_BW=abs(NHBLACK/NHBLACK_REGION - NHWHITE/NHWHITE_REGION),
-         D_AW=abs(ASIAN/ASIAN_REGION - NHWHITE/NHWHITE_REGION),
-         D_HW=abs(HISPANIC/HISPANIC_REGION - NHWHITE/NHWHITE_REGION),
-         D_BA=abs(NHBLACK/NHBLACK_REGION - ASIAN/ASIAN_REGION),
-         D_BH=abs(NHBLACK/NHBLACK_REGION - HISPANIC/HISPANIC_REGION),
-         D_AH=abs(ASIAN/ASIAN_REGION - HISPANIC/HISPANIC_REGION)
+compute_dissim_for_place_by_decade <- function(x) { 
+  x %>%       
+  mutate(D_NWW=abs(NONWHITE/NONWHITE_PLACE - NHWHITE/NHWHITE_PLACE),
+         D_BW=abs(NHBLACK/NHBLACK_PLACE - NHWHITE/NHWHITE_PLACE),
+         D_AW=abs(ASIAN/ASIAN_PLACE - NHWHITE/NHWHITE_PLACE),
+         D_HW=abs(HISPANIC/HISPANIC_PLACE - NHWHITE/NHWHITE_PLACE),
+         D_BA=abs(NHBLACK/NHBLACK_PLACE - ASIAN/ASIAN_PLACE),
+         D_BH=abs(NHBLACK/NHBLACK_PLACE - HISPANIC/HISPANIC_PLACE),
+         D_AH=abs(ASIAN/ASIAN_PLACE - HISPANIC/HISPANIC_PLACE)
   ) %>%
   group_by(year, placefp10, NAME) %>%
-  summarise(Dis_NWW = .5*sum(D_NWW, na.rm=T),
-            Dis_BW = .5*sum(D_BW, na.rm=T),
-            Dis_AW = .5*sum(D_AW, na.rm=T),
-            Dis_HW= .5*sum(D_HW, na.rm=T),
-            Dis_BA = .5*sum(D_BA, na.rm=T),
-            Dis_BH = .5*sum(D_BH, na.rm=T),
-            Dis_AH = .5*sum(D_AH, na.rm=T)
+  summarise(Dis_NWW = .5*sum(D_NWW, na.rm=F),
+            Dis_BW = .5*sum(D_BW, na.rm=F),
+            Dis_AW = .5*sum(D_AW, na.rm=F),
+            Dis_HW= .5*sum(D_HW, na.rm=F),
+            Dis_BA = .5*sum(D_BA, na.rm=F),
+            Dis_BH = .5*sum(D_BH, na.rm=F),
+            Dis_AH = .5*sum(D_AH, na.rm=F)
   ) %>% 
   ungroup() %>%
   mutate_at(vars(Dis_NWW:Dis_AH),
-            .funs = funs(. * 100)) %>% 
+            .funs = funs(. * 100)) %>%
   arrange(placefp10, NAME, year) %>%
   relocate(placefp10, NAME, year) 
+}
 
+# BAY
+bay_places_dissim <- all_decades_race_tracts_bay  %>%
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_bay_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.) %>%
+  mutate(NAME = if_else(NAME == "83215",
+                        "Waldon CDP",
+                        NAME))
+# LA
+la_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 31100) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_la_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# BAKERSFIELD
+baker_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 12540) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_baker_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# RIVERSIDE
+river_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 40140) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_river_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# DENVER
+denver_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 19740) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_denver_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# DETROIT 
+detroit_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 19820) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_detroit_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# KC
+kc_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 28140) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_kc_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# PITT
+pitt_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 38300) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_pitt_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
+
+# YAKIMA
+yakima_places_dissim <- all_decades_race_tracts_regions %>%
+  filter(cbsa10 == 49420) %>% 
+  select(year, place_id, placefp10, POP:NONWHITE) %>% 
+  mutate(placefp10 = as.character(placefp10),
+         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
+  left_join(., all_decades_race_places_yakima_d, by = c("year", "place_id", "placefp10")) %>% 
+  compute_dissim_for_place_by_decade(.)
 
 
 # REGION DIVERGENCE-------------------------------------------------------------
+create_race_proportions <- function(x) { 
+  x %>% 
+    mutate_at(vars(NHWHITE:HISPANIC), funs("PR" = (./POP))) %>%
+    mutate(OTHER_PR = 1.0 - (NHWHITE_PR + NHBLACK_PR + NATIVE_PR + ASIAN_PR + HISPANIC_PR)
+           )
+}
 
-all_decades_race_places_prop <- all_decades_race_places %>%
-  mutate_at(vars(NHWHITE:HISPANIC), funs("PR" = (./POP))) %>%
-  mutate(OTHER_PR = 1.0 - (NHWHITE_PR + NHBLACK_PR + NATIVE_PR + ASIAN_PR + HISPANIC_PR)
-  )
+filter70 <- function(x) { 
+  x %>% 
+    filter(year == "1970-01-31")
+}
 
-all_decades_race_places_seg <- all_decades_race_places_prop
+filter80 <- function(x) { 
+  x %>% 
+    filter(year == "1980-01-31")
+}
 
-## 2020
-bay_places_pr_2020 <- all_decades_race_places_prop %>%
-  filter(year > "2020-01-01") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  ) %>%
-  mutate(divergence = rescale(divergence, to = c(0, 1.00))) %>% 
-  left_join(., all_decades_places_dissim_scores, by = c("placefp10", "year")) %>%
-  mutate_at(vars(Dis_NWW:Dis_AH),
-            funs(if_else(. > 1.0,
-                         0.95,
-                         .))
-  )
+filter90 <- function(x) { 
+  x %>% 
+    filter(year == "1990-01-31")
+}
 
-bay_places_seg_2020 <- all_decades_race_places_shp %>% 
-  filter(year == "2020-01-31") %>% 
-  select(-year,-POP,-NHWHITE:-NONWHITE) %>%
-  left_join(., bay_places_pr_2020, by = c("place_id")) %>%
-  select(place_id,
-         placefp10 = "placefp10.x",
-         n_tracts, 
-         NAME, 
-         year,
-         POP,
-         NHWHITE_PR:divergence,
-         Dis_NWW:Dis_AH) %>%
-  distinct(geometry, .keep_all = TRUE)
-st_write(bay_places_seg_2020, "bay_region_places_segregation_2020.shp")
+filter00 <- function(x) { 
+  x %>% 
+    filter(year == "2000-01-31")
+}
+
+filter10 <- function(x) { 
+  x %>% 
+    filter(year == "2010-01-31")
+}
+
+filter20 <- function(x) { 
+  x %>% 
+    filter(year == "2020-01-31")
+}
+
+compute_divergence <- function(x) { 
+  x %>% 
+    mutate(divergence = divergence(NHWHITE_PR,
+                                   NHBLACK_PR, 
+                                   NATIVE_PR, 
+                                   ASIAN_PR, 
+                                   HISPANIC_PR, 
+                                   population = POP,
+                                   summed = FALSE)
+    ) %>%
+    ungroup() %>%
+    mutate(
+      divergence = na_if(divergence, 0),
+      divergence = if_else(divergence <0, 
+                           0, 
+                           divergence)
+    ) %>%
+    mutate(divergence = rescale(divergence, to = c(0, 1.00))) 
+}
+
+## BAY AREA 
+all_decades_race_places_bay_prop <- all_decades_race_places_bay %>% 
+  create_race_proportions(.)
+  #70
+bay_places_seg70 <- all_decades_race_places_bay_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg70_shp <- all_decades_race_places_bay_shp %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg70, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg70_shp, "bay_area_places_segregation_1970.shp")
+
+  #80
+bay_places_seg80 <- all_decades_race_places_bay_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg80_shp <- all_decades_race_places_bay_shp %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg80, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg80_shp, "bay_area_places_segregation_1980.shp")
+
+  #90
+bay_places_seg90 <- all_decades_race_places_bay_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg90_shp <- all_decades_race_places_bay_shp %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg90, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg90_shp, "bay_area_places_segregation_1990.shp")
+
+  #00
+bay_places_seg00 <- all_decades_race_places_bay_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg00_shp <- all_decades_race_places_bay_shp %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg00, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg00_shp, "bay_area_places_segregation_2000.shp")
+
+  #10
+bay_places_seg10 <- all_decades_race_places_bay_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg10_shp <- all_decades_race_places_bay_shp %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg10, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg10_shp, "bay_area_places_segregation_2010.shp")
+
+  #20
+bay_places_seg20 <- all_decades_race_places_bay_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., bay_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+bay_places_seg20_shp <- all_decades_race_places_bay_shp %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., bay_places_seg20, by = c("placefp10", "place_id", "year", "NAME"))
+st_write(bay_places_seg20_shp, "bay_area_places_segregation_2020.shp")
+
+########
+# LA 
+########
+all_decades_race_places_la_prop <- la_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+la_places_seg70 <- all_decades_race_places_la_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg70_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg70_shp, "Los_Angeles_places_segregation_1970.shp")
+
+#80
+la_places_seg80 <- all_decades_race_places_la_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg80_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg80_shp, "Los_Angeles_places_segregation_1980.shp")
+
+#90
+la_places_seg90 <- all_decades_race_places_la_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg90_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg90_shp, "Los_Angeles_places_segregation_1990.shp")
+
+#00
+la_places_seg00 <- all_decades_race_places_la_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg00_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg00_shp, "Los_Angeles_places_segregation_2000.shp")
+
+#10
+la_places_seg10 <- all_decades_race_places_la_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg10_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg10_shp, "Los_Angeles_places_segregation_2010.shp")
+
+#20
+la_places_seg20 <- all_decades_race_places_la_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., la_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+la_places_seg20_shp <- la_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., la_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(la_places_seg20_shp, "Los_Angeles_places_segregation_2020.shp")
 
 
-## 2010
-bay_places_pr_2010 <- all_decades_race_places_prop %>%
-  filter(year == "2010-01-31") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  ) %>%
-  mutate(divergence = rescale(divergence, to = c(0, 1.00))) %>% 
-  left_join(., all_decades_places_dissim_scores, by = c("placefp10", "year")) %>%
-  mutate_at(vars(Dis_NWW:Dis_AH),
-            funs(if_else(. > 1.0,
-                         0.95,
-                         .))
-  )
-
-bay_places_seg_2010 <- all_decades_race_places_shp %>% 
-  filter(year == "2010-01-31") %>% 
-  select(-year,-POP,-NHWHITE:-NONWHITE) %>%
-  left_join(., bay_places_pr_2010, by = c("place_id")) %>%
-  select(place_id,
-         placefp10 = "placefp10.x",
-         n_tracts, 
-         NAME, 
-         year,
-         POP,
-         NHWHITE_PR:divergence,
-         Dis_NWW:Dis_AH) %>%
-  distinct(geometry, .keep_all = TRUE)
-st_write(bay_places_seg_2010, "bay_region_places_segregation_2010.shp")
-
-
-
-
-bay_places_pr_2000 <- all_decades_race_places_prop %>%
-  filter(year == "2000-01-31") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  )
-
-bay_places_pr_1990 <- all_decades_race_places_prop %>%
-  filter(year == "1990-01-31") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  )
-
-bay_places_pr_1980 <- all_decades_race_places_prop %>%
-  filter(year == "1980-01-31") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  )
-
-bay_places_pr_1970 <- all_decades_race_places_prop %>%
-  filter(year == "1970-01-31") %>%
-  mutate(divergence = divergence(NHWHITE_PR,
-                                 NHBLACK_PR, 
-                                 NATIVE_PR, 
-                                 ASIAN_PR, 
-                                 HISPANIC_PR, 
-                                 population = POP,
-                                 summed = FALSE)
-  ) %>%
-  ungroup() %>%
-  mutate(
-    divergence = na_if(divergence, 0),
-    divergence = if_else(divergence <0, 
-                         0, 
-                         divergence)
-  )
-
-bay_region_all_decades_seg <- bind_rows(bay_places_pr_1970,
-                                        bay_places_pr_1980,
-                                        bay_places_pr_1990,
-                                        bay_places_pr_2000,
-                                        bay_places_pr_2010,
-                                        bay_places_pr_2020
-)
-
-
-bay_region_shp <-  census_tracts %>% 
-  select(GEOID10) %>% 
-  right_join(., tracts_place_ids_region, by = "GEOID10") %>%
-  group_by(place_id, placefp10) %>% 
-  mutate(placefp10 = as.character(placefp10),
-         placefp10 = str_pad(placefp10, width = 5, side = "left", pad = "0")) %>%
-  summarize(n_tracts = n()) 
-
-
-st_write(bay_region_seg_1970, "bay_region_places_segregation_1970.shp")
 
 
 
 # View shapefile
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = bay_places_seg_2010 %>% 
+  addPolygons(data = la_places_seg70_shp %>% 
                 st_transform(., crs = 4326),
               label = ~(NAME)
   )
