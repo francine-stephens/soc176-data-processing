@@ -1,10 +1,10 @@
-# ---------------------------------
-# PLACE-BASED SEGREGATION MEASURES
+# ------------------------------------------------------------
+# PLACE-BASED RACIAL COMPOSITION & SEGREGATION MEASURES
 # 
 # BY: Francine Stephens
 # DATE CREATED: 04/26/2020
-# LAST UPDATED: 04/27/2020
-#----------------------------------
+# LAST UPDATED: 04/28/2020
+#-------------------------------------------------------------
 
 # SET-UP------------------------------------------------------------------------
 ## LIBRARIES
@@ -1475,13 +1475,675 @@ la_places_seg20_shp <- la_all_decades_race_places_shp %>%
 st_write(la_places_seg20_shp, "Los_Angeles_places_segregation_2020.shp")
 
 
+########
+# KC
+########
+all_decades_race_places_kc_prop <- kc_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+kc_places_seg70 <- all_decades_race_places_kc_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg70_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg70_shp, "Kansas_City_places_segregation_1970.shp")
+
+#80
+kc_places_seg80 <- all_decades_race_places_kc_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg80_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg80_shp, "Kansas_City_places_segregation_1980.shp")
+
+#90
+kc_places_seg90 <- all_decades_race_places_kc_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg90_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg90_shp, "Kansas_City_places_segregation_1990.shp")
+
+#00
+kc_places_seg00 <- all_decades_race_places_kc_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg00_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg00_shp, "Kansas_City_places_segregation_2000.shp")
+
+#10
+kc_places_seg10 <- all_decades_race_places_kc_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg10_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg10_shp, "Kansas_City_places_segregation_2010.shp")
+
+#20
+kc_places_seg20 <- all_decades_race_places_kc_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., kc_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+kc_places_seg20_shp <- kc_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., kc_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(kc_places_seg20_shp, "Kansas_City_places_segregation_2020.shp")
+
+
+#############
+# RIVERSIDE
+#############
+all_decades_race_places_river_prop <- river_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+river_places_seg70 <- all_decades_race_places_river_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg70_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg70_shp, "Riverside_San_Bernardino_places_segregation_1970.shp")
+
+#80
+river_places_seg80 <- all_decades_race_places_river_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg80_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg80_shp, "Riverside_San_Bernardino_places_segregation_1980.shp")
+
+#90
+river_places_seg90 <- all_decades_race_places_river_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg90_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg90_shp, "Riverside_San_Bernardino_places_segregation_1990.shp")
+
+#00
+river_places_seg00 <- all_decades_race_places_river_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg00_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg00_shp, "Riverside_San_Bernardino_places_segregation_2000.shp")
+
+#10
+river_places_seg10 <- all_decades_race_places_river_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg10_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg10_shp, "Riverside_San_Bernardino_places_segregation_2010.shp")
+
+#20
+river_places_seg20 <- all_decades_race_places_river_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., river_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+river_places_seg20_shp <- river_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., river_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(river_places_seg20_shp, "Riverside_San_Bernardino_places_segregation_2020.shp")
+
+
+#############
+# PITT
+#############
+all_decades_race_places_pitt_prop <- pitt_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+pitt_places_seg70 <- all_decades_race_places_pitt_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg70_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg70_shp, "Pittsburgh_places_segregation_1970.shp")
+
+#80
+pitt_places_seg80 <- all_decades_race_places_pitt_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg80_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg80_shp, "Pittsburgh_places_segregation_1980.shp")
+
+#90
+pitt_places_seg90 <- all_decades_race_places_pitt_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg90_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg90_shp, "Pittsburgh_places_segregation_1990.shp")
+
+#00
+pitt_places_seg00 <- all_decades_race_places_pitt_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg00_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg00_shp, "Pittsburgh_places_segregation_2000.shp")
+
+#10
+pitt_places_seg10 <- all_decades_race_places_pitt_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg10_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg10_shp, "Pittsburgh_places_segregation_2010.shp")
+
+#20
+pitt_places_seg20 <- all_decades_race_places_pitt_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., pitt_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+pitt_places_seg20_shp <- pitt_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., pitt_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(pitt_places_seg20_shp, "Pittsburgh_places_segregation_2020.shp")
+
+
+#############
+# YAKIMA
+#############
+all_decades_race_places_yakima_prop <- yakima_all_decades_places %>% 
+  create_race_proportions(.)
+
+#80
+yakima_places_seg80 <- all_decades_race_places_yakima_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., yakima_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+yakima_places_seg80_shp <- yakima_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., yakima_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(yakima_places_seg80_shp, "Yakima_places_segregation_1980.shp")
+
+#90
+yakima_places_seg90 <- all_decades_race_places_yakima_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., yakima_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+yakima_places_seg90_shp <- yakima_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., yakima_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(yakima_places_seg90_shp, "Yakima_places_segregation_1990.shp")
+
+#00
+yakima_places_seg00 <- all_decades_race_places_yakima_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., yakima_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+yakima_places_seg00_shp <- yakima_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., yakima_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(yakima_places_seg00_shp, "Yakima_places_segregation_2000.shp")
+
+#10
+yakima_places_seg10 <- all_decades_race_places_yakima_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., yakima_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+yakima_places_seg10_shp <- yakima_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., yakima_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(yakima_places_seg10_shp, "Yakima_places_segregation_2010.shp")
+
+#20
+yakima_places_seg20 <- all_decades_race_places_yakima_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., yakima_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+yakima_places_seg20_shp <- yakima_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., yakima_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(yakima_places_seg20_shp, "Yakima_places_segregation_2020.shp")
+
+
+#############
+# DENVER
+#############
+all_decades_race_places_denver_prop <- denver_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+denver_places_seg70 <- all_decades_race_places_denver_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg70_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg70_shp, "Denver_places_segregation_1970.shp")
+
+#80
+denver_places_seg80 <- all_decades_race_places_denver_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg80_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg80_shp, "Denver_places_segregation_1980.shp")
+
+#90
+denver_places_seg90 <- all_decades_race_places_denver_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg90_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg90_shp, "Denver_places_segregation_1990.shp")
+
+#00
+denver_places_seg00 <- all_decades_race_places_denver_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg00_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg00_shp, "Denver_places_segregation_2000.shp")
+
+#10
+denver_places_seg10 <- all_decades_race_places_denver_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg10_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg10_shp, "Denver_places_segregation_2010.shp")
+
+#20
+denver_places_seg20 <- all_decades_race_places_denver_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., denver_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+denver_places_seg20_shp <- denver_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., denver_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(denver_places_seg20_shp, "Denver_places_segregation_2020.shp")
+
+
+#############
+# DETROIT
+#############
+all_decades_race_places_detroit_prop <- detroit_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+detroit_places_seg70 <- all_decades_race_places_detroit_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg70_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg70_shp, "Detroit_places_segregation_1970.shp")
+
+#80
+detroit_places_seg80 <- all_decades_race_places_detroit_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg80_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg80_shp, "Detroit_places_segregation_1980.shp")
+
+#90
+detroit_places_seg90 <- all_decades_race_places_detroit_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg90_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg90_shp, "Detroit_places_segregation_1990.shp")
+
+#00
+detroit_places_seg00 <- all_decades_race_places_detroit_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg00_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg00_shp, "Detroit_places_segregation_2000.shp")
+
+#10
+detroit_places_seg10 <- all_decades_race_places_detroit_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg10_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg10_shp, "Detroit_places_segregation_2010.shp")
+
+#20
+detroit_places_seg20 <- all_decades_race_places_detroit_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., detroit_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+detroit_places_seg20_shp <- detroit_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., detroit_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(detroit_places_seg20_shp, "Detroit_places_segregation_2020.shp")
+
+
+##############
+# BAKERSFIELD
+##############
+all_decades_race_places_baker_prop <- baker_all_decades_places %>% 
+  create_race_proportions(.)
+
+#70
+baker_places_seg70 <- all_decades_race_places_baker_prop %>% 
+  filter70(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg70_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter70(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg70, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg70_shp, "Bakersfield_places_segregation_1970.shp")
+
+#80
+baker_places_seg80 <- all_decades_race_places_baker_prop %>% 
+  filter80(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg80_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter80(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg80, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg80_shp, "Bakersfield_places_segregation_1980.shp")
+
+#90
+baker_places_seg90 <- all_decades_race_places_baker_prop %>% 
+  filter90(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg90_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter90(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg90, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg90_shp, "Bakersfield_places_segregation_1990.shp")
+
+#00
+baker_places_seg00 <- all_decades_race_places_baker_prop %>% 
+  filter00(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg00_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter00(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg00, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg00_shp, "Bakersfield_places_segregation_2000.shp")
+
+#10
+baker_places_seg10 <- all_decades_race_places_baker_prop %>% 
+  filter10(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg10_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter10(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg10, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg10_shp, "Bakersfield_places_segregation_2010.shp")
+
+#20
+baker_places_seg20 <- all_decades_race_places_baker_prop %>% 
+  filter20(.) %>%
+  compute_divergence(.) %>%
+  left_join(., baker_places_dissim, by = c("placefp10", "year", "NAME")) %>%
+  select(-NHWHITE:-NONWHITE)
+
+baker_places_seg20_shp <- baker_all_decades_race_places_shp %>% 
+  select(-statefp) %>%
+  filter20(.) %>% 
+  select(place_id:NAME) %>%
+  right_join(., baker_places_seg20, by = c("placefp10", "place_id", "year", "NAME")) %>%
+  select(-statefp)
+st_write(baker_places_seg20_shp, "Bakersfield_places_segregation_2020.shp")
 
 
 
 # View shapefile
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = la_places_seg70_shp %>% 
+  addPolygons(data = baker_places_seg70_shp %>% 
                 st_transform(., crs = 4326),
               label = ~(NAME)
   )
