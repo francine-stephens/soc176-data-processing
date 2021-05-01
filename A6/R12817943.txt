@@ -1,0 +1,180 @@
+--------------------------------------------------------------------------------
+Codebook for Social Explorer report ID: R12817943
+--------------------------------------------------------------------------------
+
+Contents
+    - Table Summary
+    - Data Dictionary
+    - Citation and Use
+
+
+--------------------------------------------------------------------------------
+Table Summary
+--------------------------------------------------------------------------------
+ 
+Survey:           Census 2000 on 2010 Geographies
+Dataset:          Social Explorer Tables
+Tables:
+
+      1. Highest Educational Attainment for Population 25 Years and Over
+         Universe:  Population 25 Years and over
+         Name:      T39
+         Variables:
+            T039_001:   Population 25 Years and Over:
+            T039_002:      Less than High School
+            T039_003:      High School Graduate or More (Includes Equivalency)
+            T039_004:      Some College or more
+            T039_005:      Bachelor's Degree or more
+            T039_006:      Master's Degree or more
+            T039_007:      Professional School Degree or more
+            T039_008:      Doctorate Degree
+
+
+      2. Median Household Income in <DollarYear> Dollars
+         Universe:  Households
+         Name:      T91
+         Variables:
+            T091_001:   Median Household Income in 1999 Dollars
+
+
+      3. Tenure
+         Universe:  Occupied Housing Units
+         Name:      T156
+         Variables:
+            T156_001:   Occupied Housing Units:
+            T156_002:      Owner Occupied
+            T156_003:      Renter Occupied
+
+
+      4. Median House Value for All Owner-Occupied Housing Units
+         Universe:  Owner-occupied housing units
+         Name:      T163
+         Variables:
+            T163_001:   Median Value
+
+
+      5. Median House Value for Specified Owner-Occupied Housing Units
+         Universe:  Specified owner-occupied housing units
+         Name:      T164
+         Variables:
+            T164_001:   Median Value
+
+
+      6. Median Gross Rent
+         Universe:  Specified renter-occupied housing Units paying cash rent
+         Name:      T167
+         Variables:
+            T167_001:   Median Gross Rent
+
+
+
+
+
+Survey:           Census 2000 on 2010 Geographies
+Dataset:          Census 2000 on 2010 Geographies Summary File 3 (Sample Data)
+Tables:
+
+      1. Tenure by Year Structure Built
+         Universe:  Occupied housing units
+         Name:      H36
+         Variables:
+            RC2000SF3_022_H036001:   Total
+            RC2000SF3_022_H036002:      Owner Occupied
+            RC2000SF3_022_H036003:         Built 1999 to March 2000
+            RC2000SF3_022_H036004:         Built 1995 to 1998
+            RC2000SF3_022_H036005:         Built 1990 to 1994
+            RC2000SF3_022_H036006:         Built 1980 to 1989
+            RC2000SF3_022_H036007:         Built 1970 to 1979
+            RC2000SF3_022_H036008:         Built 1960 to 1969
+            RC2000SF3_022_H036009:         Built 1950 to 1959
+            RC2000SF3_022_H036010:         Built 1940 to 1949
+            RC2000SF3_022_H036011:         Built 1939 or Earlier
+            RC2000SF3_022_H036012:      Renter Occupied
+            RC2000SF3_022_H036013:         Built 1999 to March 2000
+            RC2000SF3_022_H036014:         Built 1995 to 1998
+            RC2000SF3_022_H036015:         Built 1990 to 1994
+            RC2000SF3_022_H036016:         Built 1980 to 1989
+            RC2000SF3_022_H036017:         Built 1970 to 1979
+            RC2000SF3_022_H036018:         Built 1960 to 1969
+            RC2000SF3_022_H036019:         Built 1950 to 1959
+            RC2000SF3_022_H036020:         Built 1940 to 1949
+            RC2000SF3_022_H036021:         Built 1939 or Earlier
+
+
+
+
+
+ 
+ 
+ 
+--------------------------------------------------------------------------------
+Data Dictionary
+--------------------------------------------------------------------------------
+ 
+Variables 
+      FIPS:           FIPS
+      NAME:           Name of Area
+      QName:          Qualifying Name
+      NATION:         Nation
+      STATE:          State
+      COUNTY:         County
+      CT:             Census Tract
+      T039_001:       Population 25 Years and over
+      T039_002:       Population 25 Years and Over: Less than High School
+      T039_003:       Population 25 Years and Over: High School Graduate or More (Includes Equivalency)
+      T039_004:       Population 25 Years and Over: Some College or more
+      T039_005:       Population 25 Years and Over: Bachelor's Degree or more
+      T039_006:       Population 25 Years and Over: Master's Degree or more
+      T039_007:       Population 25 Years and Over: Professional School Degree or more
+      T039_008:       Population 25 Years and Over: Doctorate Degree
+      T091_001:       Median Household Income in 1999 Dollars
+      T156_001:       Occupied Housing Units
+      T156_002:       Occupied Housing Units: Owner Occupied
+      T156_003:       Occupied Housing Units: Renter Occupied
+      T163_001:       Owner-Occupied Housing Units: Median Value
+      T164_001:       Specified Owner-Occupied Housing Units: Median Value
+      T167_001:       Specified Renter-Occupied Paying Cash Rent: Median Gross Rent
+      RC2000SF3_022_H036001: Occupied Housing Units
+      RC2000SF3_022_H036002: Occupied Housing Units: Owner Occupied
+      RC2000SF3_022_H036003: Occupied Housing Units: Owner Occupied: Built 1999 to March 2000
+      RC2000SF3_022_H036004: Occupied Housing Units: Owner Occupied: Built 1995 to 1998
+      RC2000SF3_022_H036005: Occupied Housing Units: Owner Occupied: Built 1990 to 1994
+      RC2000SF3_022_H036006: Occupied Housing Units: Owner Occupied: Built 1980 to 1989
+      RC2000SF3_022_H036007: Occupied Housing Units: Owner Occupied: Built 1970 to 1979
+      RC2000SF3_022_H036008: Occupied Housing Units: Owner Occupied: Built 1960 to 1969
+      RC2000SF3_022_H036009: Occupied Housing Units: Owner Occupied: Built 1950 to 1959
+      RC2000SF3_022_H036010: Occupied Housing Units: Owner Occupied: Built 1940 to 1949
+      RC2000SF3_022_H036011: Occupied Housing Units: Owner Occupied: Built 1939 or Earlier
+      RC2000SF3_022_H036012: Occupied Housing Units: Renter Occupied
+      RC2000SF3_022_H036013: Occupied Housing Units: Renter Occupied: Built 1999 to March 2000
+      RC2000SF3_022_H036014: Occupied Housing Units: Renter Occupied: Built 1995 to 1998
+      RC2000SF3_022_H036015: Occupied Housing Units: Renter Occupied: Built 1990 to 1994
+      RC2000SF3_022_H036016: Occupied Housing Units: Renter Occupied: Built 1980 to 1989
+      RC2000SF3_022_H036017: Occupied Housing Units: Renter Occupied: Built 1970 to 1979
+      RC2000SF3_022_H036018: Occupied Housing Units: Renter Occupied: Built 1960 to 1969
+      RC2000SF3_022_H036019: Occupied Housing Units: Renter Occupied: Built 1950 to 1959
+      RC2000SF3_022_H036020: Occupied Housing Units: Renter Occupied: Built 1940 to 1949
+      RC2000SF3_022_H036021: Occupied Housing Units: Renter Occupied: Built 1939 or Earlier
+
+
+
+
+--------------------------------------------------------------------------------
+Citation and Use of Data
+--------------------------------------------------------------------------------
+ 
+All persons are granted a limited license to use this documentation and the
+accompanying data, subject to the following conditions:
+
+* Publications and research reports employing the data
+  must cite it appropriately. The citation should include the following:
+
+	  www.socialexplorer.com
+	  New York City, NY: Social Explorer 2021
+
+
+* Citations should also include the URL for this report:
+
+    http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R12817943
+
+If you have any questions contact info@socialexplorer.com
