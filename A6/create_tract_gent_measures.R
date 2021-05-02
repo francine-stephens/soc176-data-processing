@@ -138,7 +138,7 @@ class_all_geoids <- full_class_tracts %>%
 
 
 
-## CLEAN DEMOGRAPHIC VARIABLES--------------------------------------------------
+## CLEAN SUB-UNIT DEMOGRAPHIC VARIABLES-----------------------------------------
 # PAD GEOIDS
 mutate_tract_id <- function(x) { 
   x %>%       
@@ -301,9 +301,6 @@ all10_bg_fmt <- blck_grps %>%
             ) %>%
   left_join(., acs10_bg_fmt, by = c("GEOID10" = "GEOID")
   )
-
-
-
   
 # 2000 PREP
 
@@ -312,24 +309,51 @@ all10_bg_fmt <- blck_grps %>%
 # 1990 PREP
 
 
+
+## CLEAN SUPER-UNIT DEMOGRAPHIC VARIABLES----------------------------------------
+# aggregate tract counts to city
+
+
+
+# aggregate tract counts to msa
+
+
+
+
 ## CREATE SHAPEFILES------------------------------------------------------------
+compute_pctchg <- function(x) { 
+  x %>%       
+    mutate(
+      PC_OWN = ((POWN20 - POWN10)/POWN10) * 100,
+      PC_COLL = ((PCOLL20 - PCOLL10)/PCOLL10) * 100,
+      PC_MDHIN = ((MD_HINC20 - MD_HINC10)/MD_HINC10) * 100,
+      PC_MDHVA = ((MD_HVAL20 - MD_HVAL10)/MD_HVAL10) * 100,
+      PC_MDRVA = ((MD_RVAL20 - MD_RVAL10)/MD_RVAL10) * 100,
+      PC_NOWN = ((PNEW_OWN20 - PNEW_OWN10)/PNEW_OWN10) * 100,
+      PC_NRENT = ((PNEW_RENT20 - PNEW_RENT10)/PNEW_RENT10) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
 # BLOCK GROUPS 
 bg_us_00to10 <- all10_bg_fmt %>%
   left_join(., acs19_bg_fmt, by = c("GEOID10" = "GEOID")
             ) %>%
-  mutate(
-    PC_OWN = ((POWN20 - POWN10)/POWN10) * 100,
-    PC_COLL = ((PCOLL20 - PCOLL10)/PCOLL10) * 100,
-    PC_MDHIN = ((MD_HINC20 - MD_HINC10)/MD_HINC10) * 100,
-    PC_MDHVA = ((MD_HVAL20 - MD_HVAL10)/MD_HVAL10) * 100,
-    PC_MDRVA = ((MD_RVAL20 - MD_RVAL10)/MD_RVAL10) * 100,
-    PC_NOWN = ((PNEW_OWN20 - PNEW_OWN10)/PNEW_OWN10) * 100,
-    PC_NRENT = ((PNEW_RENT20 - PNEW_RENT10)/PNEW_RENT10) * 100
-  ) %>%
-  mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+  compute_pctchg(.) 
+  ## ADD CITY MEASURES
+  ## CREATE GENTRIFICATION MEASURES
 
 
 # CENSUS TRACTS
+tracts_us_00to10 <- census_tracts %>%
+  left_join(., all10_tract_fmt,  by = c("GEOID10" = "GEOID")
+            ) %>%
+  left_join(., acs19_tract_fmt, by = c("GEOID10" = "GEOID") 
+            ) %>% 
+  compute_pctchg(.) 
+## ADD CITY MEASURES
+## CREATE GENTRIFICATION MEASURES
+
 
 
 # View shapefile
