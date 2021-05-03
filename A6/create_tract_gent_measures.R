@@ -77,6 +77,10 @@ acs19_bg <- read_csv(paste0(wd,
                             "/BG_2019_ACS.csv")
 )
 
+acs19_place <- read_csv(paste0(wd,
+                               "/PLACE_2019_ACS.csv")
+)
+
 ## 2010 DEMOGS 
 census10_tenure_tract <- read_csv(paste0(wd,
                                          "/CT_2010_Decennial_Tenure.csv")
@@ -94,6 +98,13 @@ acs10_bg <- read_csv(paste0(wd,
                             "/BG_2014_ACS.csv")
 )
 
+census10_tenure_place <- read_csv(paste0(wd,
+                                        "/PLACE_2010_Decennial_Tenure.csv")
+)
+
+acs10_place <- read_csv(paste0(wd, 
+                              "/PLACE_2014_ACS.csv")
+)
 
 ## 2000 DEMOGS
 
@@ -311,11 +322,11 @@ all10_bg_fmt <- blck_grps %>%
 
 
 ## CLEAN SUPER-UNIT DEMOGRAPHIC VARIABLES----------------------------------------
-# aggregate tract counts to city
+# CITY
 
 
 
-# aggregate tract counts to msa
+# MSAMD
 
 
 
