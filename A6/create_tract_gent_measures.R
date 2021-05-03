@@ -189,30 +189,6 @@ create_key_vars <- function(x) {
            MD_RVAL
     ) 
 }
-
-create_key_vars10 <- function(x) { 
-  x %>%       
-    mutate(PCOLL = (COLL/POP_O25) * 100,
-           POWN = (HU_OWN/HU_OCC) * 100,
-           PNEW_OWN = (NEW_OWN/HU_OWN) * 100,
-           PNEW_RENT = (NEW_RENT/HU_RENT) * 100
-    ) %>%
-    select(GEOID,
-           COLL, 
-           PCOLL,
-           MD_HINC,
-           HU_OCC,
-           HU_OWN,
-           POWN, 
-           HU_RENT,
-           NEW_OWN,
-           PNEW_OWN,
-           NEW_RENT,
-           PNEW_RENT,
-           MD_HVAL,
-           MD_RVAL
-    ) 
-}
   
   
 # 2020 PREP
@@ -279,12 +255,12 @@ all10_tract_fmt <- census10_tract_tenure_fmt %>%
            MD_RVAL10)
 
 census10_bg_tenure_fmt <- census10_tenure_bg %>% 
-  mutate_blckgrp_id %>%
+  mutate_blckgrp_id(.) %>%
   mutate(POWN = (HU_OWN/HU_OCC) * 100) %>% 
   rename_at(vars(-GEOID),function(x) paste0(x,"10"))
 
 acs10_bg_fmt <- acs10_bg %>%
-  mutate_blckgrp_id %>% 
+  mutate_blckgrp_id(.) %>% 
   mutate(NEW_OWN = (OWN_2010AFTER + OWN_2000T2009), 
          NEW_RENT = (RENT_2010AFTER + RENT_2000T2009)
   ) %>%
@@ -322,8 +298,85 @@ all10_bg_fmt <- blck_grps %>%
 
 
 ## CLEAN SUPER-UNIT DEMOGRAPHIC VARIABLES----------------------------------------
-# CITY
+format_place_identifier <- function(x) { 
+  x %>%       
+    mutate(PLACEFP = as.character(GEOID),
+           PLACEFP = str_pad(PLACEFP, width = 7, side = "left", pad = "0")
+    ) %>%
+    relocate(PLACEFP, .before = "GEOID") 
+}
 
+compute_place_pctchg <- function(x) { 
+  x %>%       
+    mutate(
+      PC_OWN = ((C_POWN20 - C_POWN10)/C_POWN10) * 100,
+      PC_COLL = ((C_PCOLL20 - C_PCOLL10)/C_PCOLL10) * 100,
+      PC_MDHIN = ((C_MD_HINC20 - C_MD_HINC10)/C_MD_HINC10) * 100,
+      PC_MDHVA = ((C_MD_HVAL20 - C_MD_HVAL10)/C_MD_HVAL10) * 100,
+      PC_MDRVA = ((C_MD_RVAL20 - C_MD_RVAL10)/C_MD_RVAL10) * 100,
+      PC_NOWN = ((C_PNEW_OWN20 - C_PNEW_OWN10)/C_PNEW_OWN10) * 100,
+      PC_NRENT = ((C_PNEW_RENT20 - C_PNEW_RENT10)/C_PNEW_RENT10) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
+
+# CITY
+acs19_place_fmt <- acs19_place %>% 
+  mutate(
+    NEW_RENT = (RENTER_AFTER2014 + RENTER_2010T2013),
+    NEW_OWN = (OCC_AFTER2014 + OCC_2010T2013) - NEW_RENT
+  ) %>%
+  create_key_vars(.) %>%
+  format_place_identifier(.) %>%
+  relocate(PLACEFP, .before = "GEOID") %>%
+  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C_", x, "20"))
+
+acs10_place_fmt <- acs10_place %>% 
+  mutate(
+    NEW_RENT = (RENTER_OCC_AFTER2010 + RENTER_OCC_2000T2009),
+    NEW_OWN = (OCC_AFTER2010 + OCC_2000T2009) - NEW_RENT
+  ) %>% 
+  format_place_identifier(.) 
+
+census10_place_tenure_fmt <- census10_tenure_place %>%
+  mutate(POWN = (HU_OWN/HU_OCC) * 100) %>% 
+  format_place_identifier(.)  %>%
+  select(-HU_OCC)
+
+all10_place_fmt <- census10_place_tenure_fmt %>%
+  left_join(., acs10_place_fmt, by = c("PLACEFP", "GEOID")
+            ) %>%
+  mutate(PCOLL = (COLL/POP_O25) * 100,
+         POWN = (HU_OWN/HU_OCC) * 100,
+         PNEW_OWN = (NEW_OWN/HU_OWN) * 100,
+         PNEW_RENT = (NEW_RENT/HU_RENT) * 100
+  ) %>%
+  select(PLACEFP,
+         GEOID,
+         CITY,
+         COLL, 
+         PCOLL,
+         MD_HINC,
+         HU_OCC,
+         HU_OWN,
+         POWN, 
+         HU_RENT,
+         NEW_OWN,
+         PNEW_OWN,
+         NEW_RENT,
+         PNEW_RENT,
+         MD_HVAL,
+         MD_RVAL
+  ) %>% 
+  rename_at(vars(-PLACEFP:-CITY), function(x) paste0("C_", x, "10"))
+
+class_places_vars <- all10_place_fmt %>%
+  left_join(., acs19_place_fmt, by = c("PLACEFP", "GEOID")
+            ) %>%
+  compute_place_pctchg(.) %>%
+  rename_at(vars(starts_with("PC_")), function(x) paste0("C_", x)) %>%
+  select(-GEOID)
 
 
 # MSAMD
@@ -351,6 +404,15 @@ bg_us_00to10 <- all10_bg_fmt %>%
   left_join(., acs19_bg_fmt, by = c("GEOID10" = "GEOID")
             ) %>%
   compute_pctchg(.) 
+
+
+class_bg_00to10 <- bg_us_00to10 %>%
+  mutate(tractid = str_c(STATEFP10,
+                         COUNTYFP10,
+                         TRACTCE10, 
+                         sep = "")
+         ) %>%
+  filter(tractid %in% class_all_geoids$GEOID)
   ## ADD CITY MEASURES
   ## CREATE GENTRIFICATION MEASURES
 
