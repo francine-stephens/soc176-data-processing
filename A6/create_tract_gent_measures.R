@@ -45,6 +45,12 @@ student_hoods <- read_csv(paste0(student_path,
                                  "student_neighborhoods_list.csv")
 )
 
+francine_nhood <- c("06075026100", 
+                    "06075026301", 
+                    "06075026004",
+                    "06075026001",
+                    "06075025500")
+
 census_tracts <- st_read(paste0(shp_repo, 
                                 tracts10_path,
                                 "US_tract_2010.shp"),
@@ -405,14 +411,52 @@ bg_us_00to10 <- all10_bg_fmt %>%
             ) %>%
   compute_pctchg(.) 
 
+# Francine's BLOCK GROUPS
+excelsior_bg_00to10 <- bg_us_00to10 %>%
+  mutate(tractid = str_c(STATEFP10,
+                         COUNTYFP10,
+                         TRACTCE10, 
+                         sep = ""),
+         PLACEFP = "0667000"
+  ) %>%
+  filter(tractid %in% francine_nhood) %>%
+  select(-STATEFP10:-COUNTYFP10, -MTFCC10:-Shape_len)
 
+excelsior_bg_00to10 <- excelsior_bg_00to10 %>% 
+  left_join(., class_places_vars, by = "PLACEFP") 
+
+
+excelsior_bg <- excelsior_bg_00to10 %>%
+  mutate(gentrifiable = if_else(MD_HINC10 > C_MD_HINC10,
+                                "Gentrifiable",
+                                "Not Gentrifiable"),
+         fast_homeval_chg = if_else(PC_MDHVA > C_PC_MDHVA | PC_MDRVA > C_PC_MDRVA,
+                                    1, 
+                                    0),
+         fast_demog_chg = if_else(PC_COLL > C_PC_COLL | PC_MDHIN > C_PC_MDHIN,
+                                  1, 
+                                  0),
+         gentrifying = if_else(gentrifiable == "Gentrifiable" & (fast_homeval_chg == 1 & fast_demog_chg == 1),
+                               "Gentrifying",
+                               "Not Gentrifying"
+                               ),
+         gentrifying = if_else(gentrifying == "Not Gentrifying" & gentrifiable == "Not Gentrifiable",
+                               "Not Gentrifiable",
+                               gentrifying
+                               )
+         )
+          
+
+
+# CLASS BLOCK GROUPS
 class_bg_00to10 <- bg_us_00to10 %>%
   mutate(tractid = str_c(STATEFP10,
                          COUNTYFP10,
                          TRACTCE10, 
                          sep = "")
          ) %>%
-  filter(tractid %in% class_all_geoids$GEOID)
+  filter(tractid %in% class_all_geoids$GEOID | 
+         tractid %in% francine_nhood)
   ## ADD CITY MEASURES
   ## CREATE GENTRIFICATION MEASURES
 
@@ -430,9 +474,20 @@ tracts_us_00to10 <- census_tracts %>%
 
 
 # View shapefile
+gent_pal <- colorFactor(
+  palette = c('darkorchid4', 'darkgrey', 'violet'),
+  domain = excelsior_bg$gentrifying
+)
+
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = class_all_geoids %>% 
+  addPolygons(data = excelsior_bg %>% 
                 st_transform(., crs = 4326),
-              label = ~(GEOID)
+              fillColor = ~gent_pal(gentrifying),
+              weight = 2,
+              opacity = 1,
+              color = "white",
+              dashArray = "3",
+              fillOpacity = 0.7,
+              label = ~(gentrifying)
   )
