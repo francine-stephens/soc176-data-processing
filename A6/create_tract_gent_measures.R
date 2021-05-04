@@ -80,7 +80,7 @@ acs19_tract <- read_csv(paste0(wd,
                         )
 
 acs19_bg <- read_csv(paste0(wd,
-                            "/BG_2019_ACS.csv")
+                            "/BG_2019.csv")
 )
 
 acs19_place <- read_csv(paste0(wd,
@@ -101,7 +101,7 @@ census10_tenure_bg <- read_csv(paste0(wd,
 )
 
 acs10_bg <- read_csv(paste0(wd, 
-                            "/BG_2014_ACS.csv")
+                            "/BG_2014.csv")
 )
 
 census10_tenure_place <- read_csv(paste0(wd,
@@ -315,13 +315,13 @@ format_place_identifier <- function(x) {
 compute_place_pctchg <- function(x) { 
   x %>%       
     mutate(
-      PC_OWN = ((C_POWN20 - C_POWN10)/C_POWN10) * 100,
-      PC_COLL = ((C_PCOLL20 - C_PCOLL10)/C_PCOLL10) * 100,
-      PC_MDHIN = ((C_MD_HINC20 - C_MD_HINC10)/C_MD_HINC10) * 100,
-      PC_MDHVA = ((C_MD_HVAL20 - C_MD_HVAL10)/C_MD_HVAL10) * 100,
-      PC_MDRVA = ((C_MD_RVAL20 - C_MD_RVAL10)/C_MD_RVAL10) * 100,
-      PC_NOWN = ((C_PNEW_OWN20 - C_PNEW_OWN10)/C_PNEW_OWN10) * 100,
-      PC_NRENT = ((C_PNEW_RENT20 - C_PNEW_RENT10)/C_PNEW_RENT10) * 100
+      PC_OWN = ((CPOWN20 - CPOWN10)/CPOWN10) * 100,
+      PC_COLL = ((CPCOLL20 - CPCOLL10)/CPCOLL10) * 100,
+      PC_MDHIN = ((CMD_HINC20 - CMD_HINC10)/CMD_HINC10) * 100,
+      PC_MDHVA = ((CMD_HVAL20 - CMD_HVAL10)/CMD_HVAL10) * 100,
+      PC_MDRVA = ((CMD_RVAL20 - CMD_RVAL10)/CMD_RVAL10) * 100,
+      PC_NOWN = ((CPNEW_OWN20 - CPNEW_OWN10)/CPNEW_OWN10) * 100,
+      PC_NRENT = ((CPNEW_RENT20 - CPNEW_RENT10)/CPNEW_RENT10) * 100
     ) %>%
     mutate(across(starts_with("PC_"), ~na_if(., Inf)))
 }
@@ -336,7 +336,7 @@ acs19_place_fmt <- acs19_place %>%
   create_key_vars(.) %>%
   format_place_identifier(.) %>%
   relocate(PLACEFP, .before = "GEOID") %>%
-  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C_", x, "20"))
+  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "20"))
 
 acs10_place_fmt <- acs10_place %>% 
   mutate(
@@ -375,13 +375,13 @@ all10_place_fmt <- census10_place_tenure_fmt %>%
          MD_HVAL,
          MD_RVAL
   ) %>% 
-  rename_at(vars(-PLACEFP:-CITY), function(x) paste0("C_", x, "10"))
+  rename_at(vars(-PLACEFP:-CITY), function(x) paste0("C", x, "10"))
 
 class_places_vars <- all10_place_fmt %>%
   left_join(., acs19_place_fmt, by = c("PLACEFP", "GEOID")
             ) %>%
   compute_place_pctchg(.) %>%
-  rename_at(vars(starts_with("PC_")), function(x) paste0("C_", x)) %>%
+  rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
   select(-GEOID)
 
 
@@ -406,13 +406,13 @@ compute_pctchg <- function(x) {
 }
 
 # BLOCK GROUPS 
-bg_us_00to10 <- all10_bg_fmt %>%
+bg_us_10to20 <- all10_bg_fmt %>%
   left_join(., acs19_bg_fmt, by = c("GEOID10" = "GEOID")
             ) %>%
   compute_pctchg(.) 
 
 # Francine's BLOCK GROUPS
-excelsior_bg_00to10 <- bg_us_00to10 %>%
+excelsior_bg_10to20 <- bg_us_10to20 %>%
   mutate(tractid = str_c(STATEFP10,
                          COUNTYFP10,
                          TRACTCE10, 
@@ -422,30 +422,32 @@ excelsior_bg_00to10 <- bg_us_00to10 %>%
   filter(tractid %in% francine_nhood) %>%
   select(-STATEFP10:-COUNTYFP10, -MTFCC10:-Shape_len)
 
-excelsior_bg_00to10 <- excelsior_bg_00to10 %>% 
+excelsior_bg_10to20 <- excelsior_bg_10to20 %>% 
   left_join(., class_places_vars, by = "PLACEFP") 
 
 
-excelsior_bg <- excelsior_bg_00to10 %>%
-  mutate(gentrifiable = if_else(MD_HINC10 > C_MD_HINC10,
-                                "Gentrifiable",
-                                "Not Gentrifiable"),
-         fast_homeval_chg = if_else(PC_MDHVA > C_PC_MDHVA | PC_MDRVA > C_PC_MDRVA,
-                                    1, 
-                                    0),
-         fast_demog_chg = if_else(PC_COLL > C_PC_COLL | PC_MDHIN > C_PC_MDHIN,
-                                  1, 
-                                  0),
-         gentrifying = if_else(gentrifiable == "Gentrifiable" & (fast_homeval_chg == 1 & fast_demog_chg == 1),
-                               "Gentrifying",
-                               "Not Gentrifying"
+excelsior_bg <- excelsior_bg_10to20 %>%
+  mutate(GENT_ELIG = if_else(MD_HINC10 > CMD_HINC10,
+                             "Gentrifiable",
+                             "Not Gentrifiable"),
+         HG_HVAL = if_else(PC_MDHVA > CPC_MDHVA | PC_MDRVA > CPC_MDRVA,
+                           "Yes", 
+                           "No"),
+         HG_DEMOG = if_else(PC_COLL > CPC_COLL | PC_MDHIN > CPC_MDHIN,
+                            "Yes", 
+                            "No"),
+         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HG_HVAL == "Yes" & HG_DEMOG == "Yes"),
+                            "Gentrifying",
+                            "Not Gentrifying"
                                ),
-         gentrifying = if_else(gentrifying == "Not Gentrifying" & gentrifiable == "Not Gentrifiable",
-                               "Not Gentrifiable",
-                               gentrifying
-                               )
-         )
-          
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+                            "Not Gentrifiable",
+                            GENTRIFY
+                            )
+         ) %>%
+  select(-BLKGRPCE10, -tractid:-CITY, -CCOLL10:-CPC_NRENT) %>%
+  mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) 
+
 
 
 # CLASS BLOCK GROUPS
@@ -476,18 +478,21 @@ tracts_us_00to10 <- census_tracts %>%
 # View shapefile
 gent_pal <- colorFactor(
   palette = c('darkorchid4', 'darkgrey', 'violet'),
-  domain = excelsior_bg$gentrifying
+  domain = excelsior_bg$GENTRIFY
 )
 
 leaflet() %>%
   addTiles() %>%
   addPolygons(data = excelsior_bg %>% 
                 st_transform(., crs = 4326),
-              fillColor = ~gent_pal(gentrifying),
+              fillColor = ~gent_pal(GENTRIFY),
               weight = 2,
               opacity = 1,
               color = "white",
               dashArray = "3",
               fillOpacity = 0.7,
-              label = ~(gentrifying)
+              label = ~(GENTRIFY)
   )
+
+# EXPORT SHAPEFILES-------------------------------------------------------------
+st_write(excelsior_bg, "Excelsior_blckgrps_gentrification.shp")
