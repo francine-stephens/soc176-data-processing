@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------------------
-# PREPARE CENSUS TRACT GENTRIFICATION DATA
+# PREPARE CENSUS BLOCK GROUP GENTRIFICATION DATA
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/30/21
@@ -30,8 +30,11 @@ wd <- getwd()
 shp_repo <- "C:/Users/Franc/Documents/Shapefile_Repository/"
 tracts10_path <- "2010USA_CensusGeog_Shp/nhgis0005_shapefile_tl2010_us_tract_2010/"
 metros10_path <- "2010USA_CensusGeog_Shp/tl_2010_us_cbsa10/"
+blockgrps_path <- "2010USA_CensusGeog_Shp/us_blck_grp_2010/"
 student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/"
 LTDB_geog_ids_path <- "C:/Users/Franc/Documents/Stanford/SOC176/soc176-data-processing/A5/LTDB_Std_All_fullcount/"
+##INSERT DATA PATHS HERE ##
+
 
 # APIs
 census_api_key("99ccb52a629609683f17f804ca875115e3f0804c",  overwrite = T)
@@ -47,7 +50,7 @@ francine_nhood <- c("06075026100",
                     "06075026004",
                     "06075026001",
                     "06075025500"
-                    )
+)
 
 census_tracts <- st_read(paste0(shp_repo, 
                                 tracts10_path,
@@ -59,59 +62,44 @@ metros <- st_read(paste0(shp_repo,
                          "tl_2010_us_cbsa10.shp"),
                   quiet = F)
 
+blck_grps <- st_read(paste0(shp_repo, 
+                            blockgrps_path,
+                            "US_blck_grp_2010.shp"),
+                     quiet = F)
+
 state_codes <- c(state.abb, "DC")
 us_tracts <- map_df(state_codes, ~tracts(state = .x, cb = FALSE))
 us_places <- map_df(state_codes, ~places(state = .x, cb = TRUE))
 
 LTDB00 <- read_csv(paste0(LTDB_geog_ids_path, 
                           "LTDB_Std_2000_fullcount.csv")
-            )
+)
 
 # 2020 DEMOGS
-acs19_tract <- read_csv(paste0(wd,
-                               "/CT_2019_ACS.csv")
-                        )
+acs19_bg <- read_csv(paste0(wd,
+                            "/BG_2019.csv")
+)
 
 acs19_place <- read_csv(paste0(wd,
                                "/PLACE_2019_ACS.csv")
 )
 
 ## 2010 DEMOGS 
-census10_tenure_tract <- read_csv(paste0(wd,
-                                         "/CT_2010_Decennial_Tenure.csv")
+census10_tenure_bg <- read_csv(paste0(wd,
+                                      "/BG_2010_Decennial_Tenure.csv")
 )
 
-acs10_tract <- read_csv(paste0(wd, 
-                               "/CT_2012_ACS.csv")
+acs10_bg <- read_csv(paste0(wd, 
+                            "/BG_2014.csv")
 )
-
 
 census10_tenure_place <- read_csv(paste0(wd,
-                                        "/PLACE_2010_Decennial_Tenure.csv")
+                                         "/PLACE_2010_Decennial_Tenure.csv")
 )
 
 acs10_place <- read_csv(paste0(wd, 
-                              "/PLACE_2014_ACS.csv")
+                               "/PLACE_2014_ACS.csv")
 )
-
-## 2000 DEMOGS
-census00_tract <- read_csv(paste0(wd, 
-                                  "/CT_2000_on_2010.csv")
-                           )
-
-census00_place <- read_csv(paste0(wd, 
-                                  "/PLACE_2000.csv")
-                           )
-
-## 1990 DEMOGS 
-census90_tract <- read_csv(paste0(wd, 
-                                  "/CT_1990_on_2010.csv")
-)
-
-census90_place <- read_csv(paste0(wd, 
-                                  "/PLACE_1990.csv")
-                          )
-
 
 ## PREP GEOGRAPHIC IDENTIFIERS--------------------------------------------------
 
@@ -139,22 +127,21 @@ all_geog_identifiers_per_tract <- LTDB00 %>%
          cbsa10,
          metdiv10,
          ccflag10
-         ) %>%
+  ) %>%
   mutate(GEOID = str_pad(TRTID10, width = 11, side = "left", pad = "0"))
-  
+
 class_all_geoids <- full_class_tracts %>%
   left_join(.,  all_geog_identifiers_per_tract, by = "GEOID") %>%
   rename(state_abb = "state.x") %>%
   select(-state.y)
 
-
 ## CLEAN SUB-UNIT DEMOGRAPHIC VARIABLES-----------------------------------------
 # PAD GEOIDS
-mutate_tract_id <- function(x) { 
+mutate_blckgrp_id <- function(x) { 
   x %>%       
     mutate(GEOID = as.character(GEOID),
-         GEOID = str_pad(GEOID, width = 11, side = "left", pad = "0")
-         )
+           GEOID = str_pad(GEOID, width = 12, side = "left", pad = "0")
+    )
 }
 
 # Compute & Name Key Gentrification Variables
@@ -181,26 +168,26 @@ create_key_vars <- function(x) {
            MD_RVAL
     ) 
 }
-  
-  
+
+
 # 2020 PREP
-acs19_tract_fmt <- acs19_tract %>% 
-  mutate_tract_id(.) %>%
+acs19_bg_fmt <- acs19_bg %>%
+  mutate_blckgrp_id(.) %>% 
   mutate(NEW_OWN = (OWN_2014LATER + OWN_2010T2013), 
          NEW_RENT = (RENT_2014LATER + RENT_2010T2013)
-) %>%
+  ) %>%
   create_key_vars(.) %>%
   rename_at(vars(-GEOID),function(x) paste0(x,"20"))
 
 
 # 2010 PREP
-census10_tract_tenure_fmt <- census10_tenure_tract %>%
-  mutate_tract_id(.) %>%
+census10_bg_tenure_fmt <- census10_tenure_bg %>% 
+  mutate_blckgrp_id(.) %>%
   mutate(POWN = (HU_OWN/HU_OCC) * 100) %>% 
   rename_at(vars(-GEOID),function(x) paste0(x,"10"))
 
-acs10_tract_fmt <- acs10_tract %>%
-  mutate_tract_id(.) %>% 
+acs10_bg_fmt <- acs10_bg %>%
+  mutate_blckgrp_id(.) %>% 
   mutate(NEW_OWN = (OWN_2010AFTER + OWN_2000T2009), 
          NEW_RENT = (RENT_2010AFTER + RENT_2000T2009)
   ) %>%
@@ -221,23 +208,13 @@ acs10_tract_fmt <- acs10_tract %>%
   ) %>%
   rename_at(vars(-GEOID),function(x) paste0(x,"10"))
 
-all10_tract_fmt <- census10_tract_tenure_fmt %>%
-  left_join(., acs10_tract_fmt, by = "GEOID") %>%
-  relocate(GEOID, 
-           COLL10, 
-           PCOLL10,
-           MD_HINC10,
-           HU_OCC10,
-           HU_OWN10,
-           POWN10, 
-           HU_RENT10,
-           NEW_OWN10,
-           PNEW_OWN10,
-           NEW_RENT10,
-           PNEW_RENT10,
-           MD_HVAL10,
-           MD_RVAL10)
-
+all10_bg_fmt <- blck_grps %>%
+  left_join(., 
+            census10_bg_tenure_fmt, 
+            by = c("GEOID10" = "GEOID")
+  ) %>%
+  left_join(., acs10_bg_fmt, by = c("GEOID10" = "GEOID")
+  )
 
 # 2000 PREP
 
@@ -296,7 +273,7 @@ census10_place_tenure_fmt <- census10_tenure_place %>%
 
 all10_place_fmt <- census10_place_tenure_fmt %>%
   left_join(., acs10_place_fmt, by = c("PLACEFP", "GEOID")
-            ) %>%
+  ) %>%
   mutate(PCOLL = (COLL/POP_O25) * 100,
          POWN = (HU_OWN/HU_OCC) * 100,
          PNEW_OWN = (NEW_OWN/HU_OWN) * 100,
@@ -323,15 +300,13 @@ all10_place_fmt <- census10_place_tenure_fmt %>%
 
 class_places_vars <- all10_place_fmt %>%
   left_join(., acs19_place_fmt, by = c("PLACEFP", "GEOID")
-            ) %>%
+  ) %>%
   compute_place_pctchg(.) %>%
   rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
   select(-GEOID)
 
 
 # MSAMD
-
-
 
 
 ## CREATE SHAPEFILES------------------------------------------------------------
@@ -349,13 +324,60 @@ compute_pctchg <- function(x) {
     mutate(across(starts_with("PC_"), ~na_if(., Inf)))
 }
 
-
-tracts_us_00to10 <- census_tracts %>%
-  left_join(., all10_tract_fmt,  by = c("GEOID10" = "GEOID")
-            ) %>%
-  left_join(., acs19_tract_fmt, by = c("GEOID10" = "GEOID") 
-            ) %>% 
+# BLOCK GROUPS 
+bg_us_10to20 <- all10_bg_fmt %>%
+  left_join(., acs19_bg_fmt, by = c("GEOID10" = "GEOID")
+  ) %>%
   compute_pctchg(.) 
+
+# Francine's BLOCK GROUPS
+excelsior_bg_10to20 <- bg_us_10to20 %>%
+  mutate(tractid = str_c(STATEFP10,
+                         COUNTYFP10,
+                         TRACTCE10, 
+                         sep = ""),
+         PLACEFP = "0667000"
+  ) %>%
+  filter(tractid %in% francine_nhood) %>%
+  select(-STATEFP10:-COUNTYFP10, -MTFCC10:-Shape_len)
+
+excelsior_bg_10to20 <- excelsior_bg_10to20 %>% 
+  left_join(., class_places_vars, by = "PLACEFP") 
+
+
+excelsior_bg <- excelsior_bg_10to20 %>%
+  mutate(GENT_ELIG = if_else(MD_HINC10 > CMD_HINC10,
+                             "Gentrifiable",
+                             "Not Gentrifiable"),
+         HG_HVAL = if_else(PC_MDHVA > CPC_MDHVA | PC_MDRVA > CPC_MDRVA,
+                           "Yes", 
+                           "No"),
+         HG_DEMOG = if_else(PC_COLL > CPC_COLL | PC_MDHIN > CPC_MDHIN,
+                            "Yes", 
+                            "No"),
+         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HG_HVAL == "Yes" & HG_DEMOG == "Yes"),
+                            "Gentrifying",
+                            "Not Gentrifying"
+         ),
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+                            "Not Gentrifiable",
+                            GENTRIFY
+         )
+  ) %>%
+  select(-BLKGRPCE10, -tractid:-CITY, -CCOLL10:-CPC_NRENT) %>%
+  mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) 
+
+
+
+# CLASS BLOCK GROUPS
+class_bg_10to20 <- bg_us_00to10 %>%
+  mutate(tractid = str_c(STATEFP10,
+                         COUNTYFP10,
+                         TRACTCE10, 
+                         sep = "")
+  ) %>%
+  filter(tractid %in% class_all_geoids$GEOID | 
+           tractid %in% francine_nhood)
 ## ADD CITY MEASURES
 ## CREATE GENTRIFICATION MEASURES
 
