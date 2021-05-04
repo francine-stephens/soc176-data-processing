@@ -162,89 +162,182 @@ create_key_vars <- function(x) {
   x %>%       
     mutate(PCOLL = (COLL/POP_O25) * 100,
            POWN = (HU_OWN/HU_OCC) * 100,
-           PNEW_OWN = (NEW_OWN/HU_OWN) * 100,
-           PNEW_RENT = (NEW_RENT/HU_RENT) * 100
-    ) %>%
+           PNOWN = (NOWN/HU_OWN) * 100,
+           PNRENT = (NRENT/HU_RENT) * 100
+    ) %>% 
+    rename_at(vars(MD_HINC, MD_HVAL, MD_RVAL), function(x) gsub("_", "", x)) %>%
     select(GEOID,
            COLL, 
            PCOLL,
-           MD_HINC,
+           MDHINC,
            HU_OCC,
            HU_OWN,
            POWN, 
            HU_RENT,
-           NEW_OWN,
-           PNEW_OWN,
-           NEW_RENT,
-           PNEW_RENT,
-           MD_HVAL,
-           MD_RVAL
+           NOWN,
+           PNOWN,
+           NRENT,
+           PNRENT,
+           MDHVAL,
+           MDRVAL
     ) 
 }
   
   
 # 2020 PREP
-acs19_tract_fmt <- acs19_tract %>% 
+acs19_tract_for_stack <- acs19_tract %>% 
   mutate_tract_id(.) %>%
-  mutate(NEW_OWN = (OWN_2014LATER + OWN_2010T2013), 
-         NEW_RENT = (RENT_2014LATER + RENT_2010T2013)
-) %>%
+  mutate(NOWN = (OWN_2014LATER + OWN_2010T2013), 
+         NRENT = (RENT_2014LATER + RENT_2010T2013)
+  ) %>%
+  create_key_vars(.) %>%
+  mutate(year = as.Date("01/31/2020", format = "%m/%d/%Y")) %>%
+  relocate(year, .before = "GEOID")
+
+acs19_tract_for_chg <- acs19_tract %>% 
+  mutate_tract_id(.) %>%
+  mutate(NOWN = (OWN_2014LATER + OWN_2010T2013), 
+         NRENT = (RENT_2014LATER + RENT_2010T2013)
+        ) %>%
   create_key_vars(.) %>%
   rename_at(vars(-GEOID),function(x) paste0(x,"20"))
 
 
 # 2010 PREP
-census10_tract_tenure_fmt <- census10_tenure_tract %>%
+census10_tract_tenure_for_stack <- census10_tenure_tract %>%
+  mutate_tract_id(.) %>%
+  mutate(POWN = (HU_OWN/HU_OCC) * 100) %>%
+  mutate(year = as.Date("01/31/2010", format = "%m/%d/%Y")) %>%
+  relocate(year, .before = "GEOID")
+
+census10_tract_tenure_for_chg <- census10_tenure_tract %>%
   mutate_tract_id(.) %>%
   mutate(POWN = (HU_OWN/HU_OCC) * 100) %>% 
-  rename_at(vars(-GEOID),function(x) paste0(x,"10"))
+  rename_at(vars(-GEOID), function(x) paste0(x,"10"))
 
-acs10_tract_fmt <- acs10_tract %>%
+acs10_tract_for_stack <- acs10_tract %>%
   mutate_tract_id(.) %>% 
-  mutate(NEW_OWN = (OWN_2010AFTER + OWN_2000T2009), 
-         NEW_RENT = (RENT_2010AFTER + RENT_2000T2009)
+  mutate(NOWN = (OWN_2010AFTER + OWN_2000T2009), 
+         NRENT = (RENT_2010AFTER + RENT_2000T2009)
   ) %>%
   mutate(PCOLL = (COLL/POP_O25) * 100,
-         PNEW_OWN = (NEW_OWN/OWN_OCC_D) * 100,
-         PNEW_RENT = (NEW_RENT/RENT_OCC_D) * 100
+         PNOWN = (NOWN/OWN_OCC_D) * 100,
+         PNRENT = (NRENT/RENT_OCC_D) * 100
+  ) %>% 
+  rename_at(vars(MD_HINC, MD_HVAL, MD_RVAL),
+            function(x) gsub("_", "", x)
+            ) %>%
+  select(GEOID,
+         COLL, 
+         PCOLL,
+         MDHINC,
+         NOWN,
+         PNOWN,
+         NRENT,
+         PNRENT,
+         MDHVAL,
+         MDRVAL
+  ) %>%
+  mutate(year = as.Date("01/31/2010", format = "%m/%d/%Y")) %>%
+  relocate(year, .before = "GEOID")
+
+acs10_tract_for_chg <- acs10_tract %>%
+  mutate_tract_id(.) %>% 
+  mutate(NOWN = (OWN_2010AFTER + OWN_2000T2009), 
+         NRENT = (RENT_2010AFTER + RENT_2000T2009)
+  ) %>%
+  mutate(PCOLL = (COLL/POP_O25) * 100,
+         PNOWN = (NOWN/OWN_OCC_D) * 100,
+         PNRENT = (NRENT/RENT_OCC_D) * 100
+  ) %>% 
+  rename_at(vars(MD_HINC, MD_HVAL, MD_RVAL),
+            function(x) gsub("_", "", x)
   ) %>%
   select(GEOID,
          COLL, 
          PCOLL,
-         MD_HINC,
-         NEW_OWN,
-         PNEW_OWN,
-         NEW_RENT,
-         PNEW_RENT,
-         MD_HVAL,
-         MD_RVAL
+         MDHINC,
+         NOWN,
+         PNOWN,
+         NRENT,
+         PNRENT,
+         MDHVAL,
+         MDRVAL
   ) %>%
   rename_at(vars(-GEOID),function(x) paste0(x,"10"))
 
-all10_tract_fmt <- census10_tract_tenure_fmt %>%
-  left_join(., acs10_tract_fmt, by = "GEOID") %>%
+all10_tract_for_stack <- census10_tract_tenure_for_stack %>%
+  left_join(., acs10_tract_for_stack, by = c("GEOID", "year")) %>%
+  relocate(year,
+           GEOID, 
+           COLL, 
+           PCOLL,
+           MDHINC,
+           HU_OCC,
+           HU_OWN,
+           POWN, 
+           HU_RENT,
+           NOWN,
+           PNOWN,
+           NRENT,
+           PNRENT,
+           MDHVAL,
+           MDRVAL)
+
+all10_tract_for_chg <- census10_tract_tenure_for_chg %>%
+  left_join(., acs10_tract_for_chg, by = "GEOID") %>%
   relocate(GEOID, 
            COLL10, 
            PCOLL10,
-           MD_HINC10,
+           MDHINC10,
            HU_OCC10,
            HU_OWN10,
            POWN10, 
            HU_RENT10,
-           NEW_OWN10,
-           PNEW_OWN10,
-           NEW_RENT10,
-           PNEW_RENT10,
-           MD_HVAL10,
-           MD_RVAL10)
+           NOWN10,
+           PNOWN10,
+           NRENT10,
+           PNRENT10,
+           MDHVAL10,
+           MDRVAL10)
 
 
 # 2000 PREP
+census00_tract_for_stack <- census00_tract %>%
+  mutate_tract_id(.) %>%
+  mutate(NOWN = (OWN_AFTER1999 + OWN_1995T1998 + OWN_1990T1994), 
+         NRENT = (RENT_AFTER1999 + RENT_1995T1998 + RENT_1990T1994)
+  ) %>%
+  create_key_vars(.) %>%
+  mutate(year = as.Date("01/31/2000", format = "%m/%d/%Y")) %>%
+  relocate(year, .before = "GEOID")
 
+census00_tract_for_chg <- census00_tract %>% 
+  mutate_tract_id(.) %>%
+  mutate(NOWN = (OWN_AFTER1999 + OWN_1995T1998 + OWN_1990T1994), 
+         NRENT = (RENT_AFTER1999 + RENT_1995T1998 + RENT_1990T1994)
+  ) %>%
+  create_key_vars(.) %>%
+  rename_at(vars(-GEOID),function(x) paste0(x,"00"))
 
 
 # 1990 PREP
+census90_tract_for_stack <- census90_tract %>%
+  mutate_tract_id(.) %>%
+  mutate(NOWN = (OWN_AFTER1989 + OWN_1985T1988 + OWN_1980T1984), 
+         NRENT = (RENT_AFTER1989 + RENT_1985T1988 + RENT_1980T1984)
+  ) %>%
+  create_key_vars(.) %>%
+  mutate(year = as.Date("01/31/1990", format = "%m/%d/%Y")) %>%
+  relocate(year, .before = "GEOID")
 
+census90_tract_for_chg <- census90_tract %>%
+  mutate_tract_id(.) %>%
+  mutate(NOWN = (OWN_AFTER1989 + OWN_1985T1988 + OWN_1980T1984), 
+         NRENT = (RENT_AFTER1989 + RENT_1985T1988 + RENT_1980T1984)
+  ) %>%
+  create_key_vars(.) %>%
+  rename_at(vars(-GEOID),function(x) paste0(x,"90"))
 
 
 ## CLEAN SUPER-UNIT DEMOGRAPHIC VARIABLES----------------------------------------
@@ -259,75 +352,147 @@ format_place_identifier <- function(x) {
 compute_place_pctchg <- function(x) { 
   x %>%       
     mutate(
-      PC_OWN = ((CPOWN20 - CPOWN10)/CPOWN10) * 100,
-      PC_COLL = ((CPCOLL20 - CPCOLL10)/CPCOLL10) * 100,
-      PC_MDHIN = ((CMD_HINC20 - CMD_HINC10)/CMD_HINC10) * 100,
-      PC_MDHVA = ((CMD_HVAL20 - CMD_HVAL10)/CMD_HVAL10) * 100,
-      PC_MDRVA = ((CMD_RVAL20 - CMD_RVAL10)/CMD_RVAL10) * 100,
-      PC_NOWN = ((CPNEW_OWN20 - CPNEW_OWN10)/CPNEW_OWN10) * 100,
-      PC_NRENT = ((CPNEW_RENT20 - CPNEW_RENT10)/CPNEW_RENT10) * 100
+      PCOWN = ((CPOWN20 - CPOWN10)/CPOWN10) * 100,
+      PCCOLL = ((CPCOLL20 - CPCOLL10)/CPCOLL10) * 100,
+      PCMDHIN = ((CMDHINC20 - CMDHINC10)/CMDHINC10) * 100,
+      PCMDHVA = ((CMDHVAL20 - CMDHVAL10)/CMDHVAL10) * 100,
+      PCMDRVA = ((CMDRVAL20 - CMDRVAL10)/CMDRVAL10) * 100,
+      PCNOWN = ((CPNOWN20 - CPNOWN10)/CPNOWN10) * 100,
+      PCNRENT = ((CPNRENT20 - CPNRENT10)/CPNRENT10) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
+compute_place_pctchg00T10 <- function(x) { 
+  x %>%       
+    mutate(
+      PCOWN = ((CPOWN10 - CPOWN00)/CPOWN00) * 100,
+      PCCOLL = ((CPCOLL10 - CPCOLL00)/CPCOLL00) * 100,
+      PCMDHIN = ((CMDHINC10 - CMDHINC00)/CMDHINC00) * 100,
+      PCMDHVA = ((CMDHVAL10 - CMDHVAL00)/CMDHVAL00) * 100,
+      PCMDRVA = ((CMDRVAL10 - CMDRVAL00)/CMDRVAL00) * 100,
+      PCNOWN = ((CPNOWN10 - CPNOWN00)/CPNOWN00) * 100,
+      PCNRENT = ((CPNRENT10 - CPNRENT00)/CPNRENT00) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
+compute_place_pctchg90T00 <- function(x) { 
+  x %>%       
+    mutate(
+      PCOWN = ((CPOWN00 - CPOWN90)/CPOWN90) * 100,
+      PCCOLL = ((CPCOLL00 - CPCOLL90)/CPCOLL90) * 100,
+      PCMDHIN = ((CMDHINC00 - CMDHINC90)/CMDHINC90) * 100,
+      PCMDHVA = ((CMDHVAL00 - CMDHVAL90)/CMDHVAL90) * 100,
+      PCMDRVA = ((CMDRVAL00 - CMDRVAL90)/CMDRVAL90) * 100,
+      PCNOWN = ((CPNOWN00 - CPNOWN90)/CPNOWN90) * 100,
+      PCNRENT = ((CPNRENT00 - CPNRENT90)/CPNRENT90) * 100
     ) %>%
     mutate(across(starts_with("PC_"), ~na_if(., Inf)))
 }
 
 
 # CITY
-acs19_place_fmt <- acs19_place %>% 
+  # 2020
+acs19_place_for_chg <- acs19_place %>% 
   mutate(
-    NEW_RENT = (RENTER_AFTER2014 + RENTER_2010T2013),
-    NEW_OWN = (OCC_AFTER2014 + OCC_2010T2013) - NEW_RENT
+    NRENT = (RENTER_AFTER2014 + RENTER_2010T2013),
+    NOWN = (OCC_AFTER2014 + OCC_2010T2013) - NRENT
   ) %>%
   create_key_vars(.) %>%
   format_place_identifier(.) %>%
   relocate(PLACEFP, .before = "GEOID") %>%
   rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "20"))
 
-acs10_place_fmt <- acs10_place %>% 
+  # 2010
+acs10_place_for_chg <- acs10_place %>% 
   mutate(
-    NEW_RENT = (RENTER_OCC_AFTER2010 + RENTER_OCC_2000T2009),
-    NEW_OWN = (OCC_AFTER2010 + OCC_2000T2009) - NEW_RENT
+    NRENT = (RENTER_OCC_AFTER2010 + RENTER_OCC_2000T2009),
+    NOWN = (OCC_AFTER2010 + OCC_2000T2009) - NRENT
   ) %>% 
   format_place_identifier(.) 
 
-census10_place_tenure_fmt <- census10_tenure_place %>%
+census10_place_tenure_for_chg <- census10_tenure_place %>%
   mutate(POWN = (HU_OWN/HU_OCC) * 100) %>% 
   format_place_identifier(.)  %>%
   select(-HU_OCC)
 
-all10_place_fmt <- census10_place_tenure_fmt %>%
-  left_join(., acs10_place_fmt, by = c("PLACEFP", "GEOID")
+all10_place_for_chg <- census10_place_tenure_for_chg %>%
+  left_join(., acs10_place_for_chg, by = c("PLACEFP", "GEOID")
             ) %>%
   mutate(PCOLL = (COLL/POP_O25) * 100,
          POWN = (HU_OWN/HU_OCC) * 100,
-         PNEW_OWN = (NEW_OWN/HU_OWN) * 100,
-         PNEW_RENT = (NEW_RENT/HU_RENT) * 100
+         PNOWN = (NOWN/HU_OWN) * 100,
+         PNRENT = (NRENT/HU_RENT) * 100
+  ) %>% 
+  rename_at(vars(MD_HINC, MD_HVAL, MD_RVAL),
+            function(x) gsub("_", "", x)
   ) %>%
   select(PLACEFP,
          GEOID,
          CITY,
          COLL, 
          PCOLL,
-         MD_HINC,
+         MDHINC,
          HU_OCC,
          HU_OWN,
          POWN, 
          HU_RENT,
-         NEW_OWN,
-         PNEW_OWN,
-         NEW_RENT,
-         PNEW_RENT,
-         MD_HVAL,
-         MD_RVAL
+         NOWN,
+         PNOWN,
+         NRENT,
+         PNRENT,
+         MDHVAL,
+         MDRVAL
   ) %>% 
   rename_at(vars(-PLACEFP:-CITY), function(x) paste0("C", x, "10"))
 
-class_places_vars <- all10_place_fmt %>%
-  left_join(., acs19_place_fmt, by = c("PLACEFP", "GEOID")
+  # 2000
+census00_place_for_chg <- census00_place %>%
+  mutate(
+    NRENT = (RENT_AFTER1999 + RENT_1995T1998 + RENT_1990T1994),
+    NOWN = (OWN_AFTER1999 + OWN_1995T1998 + OWN_1990T1994)
+  ) %>%
+  create_key_vars(.) %>%
+  format_place_identifier(.) %>%
+  relocate(PLACEFP, .before = "GEOID") %>%
+  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "00"))
+  
+  # 1990
+census90_place_for_chg <- census90_place %>%
+  mutate(
+    NRENT = (RENT_AFTER1989 + RENT_1985T1988 + RENT_1980T1984),
+    NOWN = (OWN_AFTER1989 + OWN_1985T1988 + OWN_1980T1984)
+  ) %>%
+  create_key_vars(.) %>%
+  format_place_identifier(.) %>%
+  relocate(PLACEFP, .before = "GEOID") %>%
+  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "90"))
+
+## JOIN DECADES
+# 2010 & 2020
+class_places_vars_10T20 <- all10_place_for_chg %>%
+  left_join(., acs19_place_for_chg, by = c("PLACEFP", "GEOID")
             ) %>%
   compute_place_pctchg(.) %>%
   rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
   select(-GEOID)
 
+# 2000 & 2010
+class_places_vars_00T10 <-  census00_place_for_chg %>%
+  left_join(., all10_place_for_chg, by = c("PLACEFP", "GEOID")
+  ) %>%
+  compute_place_pctchg00T10(.) %>%
+  rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
+  select(-GEOID)
+
+# 1990 & 2000
+class_places_vars_00T10 <-  census90_place_for_chg %>%
+  left_join(., census00_place_for_chg, by = c("PLACEFP", "GEOID")
+  ) %>%
+  compute_place_pctchg90T00(.) %>%
+  rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
+  select(-GEOID)
 
 # MSAMD
 
@@ -335,6 +500,59 @@ class_places_vars <- all10_place_fmt %>%
 
 
 ## CREATE SHAPEFILES------------------------------------------------------------
+# STACKED GENT HOUSING & SES INDICATORS 
+census90_tract_for_stack #15 74002
+census00_tract_for_stack #15, 74002
+all10_tract_for_stack #15, 74002
+acs19_tract_for_stack #15, 74001
+
+us_tracts_90T20_SES_housing <- bind_rows(
+  census90_tract_for_stack,
+  census00_tract_for_stack,
+  all10_tract_for_stack,
+  acs19_tract_for_stack
+)
+
+class_tracts_90T20_SES_housing <- us_tracts_90T20_SES_housing %>%
+  left_join(., all_geog_identifiers_per_tract, by = "GEOID") %>%
+  select(-TRTID10, -cbsa10:-ccflag10) %>%
+  mutate(placefp10 = as.character(placefp10),
+         place = str_pad(placefp10, width = 5, side = "left", pad = "0"), 
+         STATE = str_sub(GEOID, end = 2),
+         place = str_c(STATE, place, sep = "")
+         ) %>%
+  filter(place %in% class_places_vars_10T20$PLACEFP)
+
+class_tracts_90T20_SES_housing_shp <- census_tracts %>% 
+  select(GEOID10, TRACTCE10) %>%
+  right_join(class_tracts_90T20_SES_housing, by = c("GEOID10" = "GEOID"))
+
+
+
+# CREATE SHAPEFILES FOR EACH CITY & EXPORT--------------------------------------
+sf_tracts_ses_housing_xt <- class_tracts_90T20_SES_housing_shp %>%
+  filter(county == "San Francisco County" & GEOID10 != "06075980401") %>%
+  select(year,
+         GEOID10,
+         TRACTCE10,
+         PCOLL,
+         MDHINC,
+         POWN,
+         MDHVAL,
+         MDRVAL,
+         PNOWN,
+         PNRENT,
+         COLL,
+         HU_OWN,
+         HU_RENT,
+         NOWN,
+         NRENT
+         )
+st_write(sf_tracts_ses_housing_xt, "San_Francisco_tracts_SES_housing_xt.shp")
+
+
+
+# CHANGE OVER DECADES IN GENT INDICATORS
 compute_pctchg <- function(x) { 
   x %>%       
     mutate(

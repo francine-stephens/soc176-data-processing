@@ -376,8 +376,7 @@ class_bg_10to20 <- bg_us_00to10 %>%
                          TRACTCE10, 
                          sep = "")
   ) %>%
-  filter(tractid %in% class_all_geoids$GEOID | 
-           tractid %in% francine_nhood)
+  filter(tractid %in% class_all_geoids$GEOID)
 ## ADD CITY MEASURES
 ## CREATE GENTRIFICATION MEASURES
 
