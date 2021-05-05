@@ -352,43 +352,43 @@ format_place_identifier <- function(x) {
 compute_place_pctchg <- function(x) { 
   x %>%       
     mutate(
-      PCOWN = ((CPOWN20 - CPOWN10)/CPOWN10) * 100,
-      PCCOLL = ((CPCOLL20 - CPCOLL10)/CPCOLL10) * 100,
-      PCMDHIN = ((CMDHINC20 - CMDHINC10)/CMDHINC10) * 100,
-      PCMDHVA = ((CMDHVAL20 - CMDHVAL10)/CMDHVAL10) * 100,
-      PCMDRVA = ((CMDRVAL20 - CMDRVAL10)/CMDRVAL10) * 100,
-      PCNOWN = ((CPNOWN20 - CPNOWN10)/CPNOWN10) * 100,
-      PCNRENT = ((CPNRENT20 - CPNRENT10)/CPNRENT10) * 100
+      CPCOWN = ((CPOWN20 - CPOWN10)/CPOWN10) * 100,
+      CPCCOLL = ((CPCOLL20 - CPCOLL10)/CPCOLL10) * 100,
+      CPCMDHIN = ((CMDHINC20 - CMDHINC10)/CMDHINC10) * 100,
+      CPCMDHVA = ((CMDHVAL20 - CMDHVAL10)/CMDHVAL10) * 100,
+      CPCMDRVA = ((CMDRVAL20 - CMDRVAL10)/CMDRVAL10) * 100,
+      CPCNOWN = ((CPNOWN20 - CPNOWN10)/CPNOWN10) * 100,
+      CPCNRENT = ((CPNRENT20 - CPNRENT10)/CPNRENT10) * 100
     ) %>%
-    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+    mutate(across(starts_with("CPC_"), ~na_if(., Inf)))
 }
 
 compute_place_pctchg00T10 <- function(x) { 
   x %>%       
     mutate(
-      PCOWN = ((CPOWN10 - CPOWN00)/CPOWN00) * 100,
-      PCCOLL = ((CPCOLL10 - CPCOLL00)/CPCOLL00) * 100,
-      PCMDHIN = ((CMDHINC10 - CMDHINC00)/CMDHINC00) * 100,
-      PCMDHVA = ((CMDHVAL10 - CMDHVAL00)/CMDHVAL00) * 100,
-      PCMDRVA = ((CMDRVAL10 - CMDRVAL00)/CMDRVAL00) * 100,
-      PCNOWN = ((CPNOWN10 - CPNOWN00)/CPNOWN00) * 100,
-      PCNRENT = ((CPNRENT10 - CPNRENT00)/CPNRENT00) * 100
+      CPCOWN = ((CPOWN10 - CPOWN00)/CPOWN00) * 100,
+      CPCCOLL = ((CPCOLL10 - CPCOLL00)/CPCOLL00) * 100,
+      CPCMDHIN = ((CMDHINC10 - CMDHINC00)/CMDHINC00) * 100,
+      CPCMDHVA = ((CMDHVAL10 - CMDHVAL00)/CMDHVAL00) * 100,
+      CPCMDRVA = ((CMDRVAL10 - CMDRVAL00)/CMDRVAL00) * 100,
+      CPCNOWN = ((CPNOWN10 - CPNOWN00)/CPNOWN00) * 100,
+      CPCNRENT = ((CPNRENT10 - CPNRENT00)/CPNRENT00) * 100
     ) %>%
-    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+    mutate(across(starts_with("CPC_"), ~na_if(., Inf)))
 }
 
 compute_place_pctchg90T00 <- function(x) { 
   x %>%       
     mutate(
-      PCOWN = ((CPOWN00 - CPOWN90)/CPOWN90) * 100,
-      PCCOLL = ((CPCOLL00 - CPCOLL90)/CPCOLL90) * 100,
-      PCMDHIN = ((CMDHINC00 - CMDHINC90)/CMDHINC90) * 100,
-      PCMDHVA = ((CMDHVAL00 - CMDHVAL90)/CMDHVAL90) * 100,
-      PCMDRVA = ((CMDRVAL00 - CMDRVAL90)/CMDRVAL90) * 100,
-      PCNOWN = ((CPNOWN00 - CPNOWN90)/CPNOWN90) * 100,
-      PCNRENT = ((CPNRENT00 - CPNRENT90)/CPNRENT90) * 100
+      CPCOWN = ((CPOWN00 - CPOWN90)/CPOWN90) * 100,
+      CPCCOLL = ((CPCOLL00 - CPCOLL90)/CPCOLL90) * 100,
+      CPCMDHIN = ((CMDHINC00 - CMDHINC90)/CMDHINC90) * 100,
+      CPCMDHVA = ((CMDHVAL00 - CMDHVAL90)/CMDHVAL90) * 100,
+      CPCMDRVA = ((CMDRVAL00 - CMDRVAL90)/CMDRVAL90) * 100,
+      CPCNOWN = ((CPNOWN00 - CPNOWN90)/CPNOWN90) * 100,
+      CPCNRENT = ((CPNRENT00 - CPNRENT90)/CPNRENT90) * 100
     ) %>%
-    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+    mutate(across(starts_with("CPC_"), ~na_if(., Inf)))
 }
 
 
@@ -467,7 +467,11 @@ census90_place_for_chg <- census90_place %>%
   create_key_vars(.) %>%
   format_place_identifier(.) %>%
   relocate(PLACEFP, .before = "GEOID") %>%
-  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "90"))
+  rename_at(vars(-PLACEFP, -GEOID), function(x) paste0("C", x, "90")
+            ) %>%
+  left_join(., all10_place_for_chg %>% select(GEOID, PLACEFP, CITY), by = c("GEOID", "PLACEFP")
+            ) %>%
+  relocate(CITY, .after = "GEOID")
 
 ## JOIN DECADES
 # 2010 & 2020
@@ -487,11 +491,11 @@ class_places_vars_00T10 <-  census00_place_for_chg %>%
   select(-GEOID)
 
 # 1990 & 2000
-class_places_vars_00T10 <-  census90_place_for_chg %>%
+class_places_vars_90T00 <-  census90_place_for_chg %>%
   left_join(., census00_place_for_chg, by = c("PLACEFP", "GEOID")
   ) %>%
   compute_place_pctchg90T00(.) %>%
-  rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
+  rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>% 
   select(-GEOID)
 
 # MSAMD
@@ -552,37 +556,196 @@ st_write(sf_tracts_ses_housing_xt, "San_Francisco_tracts_SES_housing_xt.shp")
 
 
 
-# CHANGE OVER DECADES IN GENT INDICATORS
-compute_pctchg <- function(x) { 
+# CHANGE OVER DECADES IN GENT INDICATORS----------------------------------------
+compute_pctchg_10T20 <- function(x) { 
   x %>%       
     mutate(
-      PC_OWN = ((POWN20 - POWN10)/POWN10) * 100,
-      PC_COLL = ((PCOLL20 - PCOLL10)/PCOLL10) * 100,
-      PC_MDHIN = ((MD_HINC20 - MD_HINC10)/MD_HINC10) * 100,
-      PC_MDHVA = ((MD_HVAL20 - MD_HVAL10)/MD_HVAL10) * 100,
-      PC_MDRVA = ((MD_RVAL20 - MD_RVAL10)/MD_RVAL10) * 100,
-      PC_NOWN = ((PNEW_OWN20 - PNEW_OWN10)/PNEW_OWN10) * 100,
-      PC_NRENT = ((PNEW_RENT20 - PNEW_RENT10)/PNEW_RENT10) * 100
+      PCOWN = ((POWN20 - POWN10)/POWN10) * 100,
+      PCCOLL = ((PCOLL20 - PCOLL10)/PCOLL10) * 100,
+      PCMDHIN = ((MDHINC20 - MDHINC10)/MDHINC10) * 100,
+      PCMDHVA = ((MDHVAL20 - MDHVAL10)/MDHVAL10) * 100,
+      PCMDRVA = ((MDRVAL20 - MDRVAL10)/MDRVAL10) * 100,
+      PCNOWN = ((PNOWN20 - PNOWN10)/PNOWN10) * 100,
+      PCNRENT = ((PNRENT20 - PNRENT10)/PNRENT10) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
+compute_pctchg_00T10 <- function(x) { 
+  x %>%       
+    mutate(
+      PCOWN = ((POWN10 - POWN00)/POWN00) * 100,
+      PCCOLL = ((PCOLL10 - PCOLL00)/PCOLL00) * 100,
+      PCMDHIN = ((MDHINC10 - MDHINC00)/MDHINC00) * 100,
+      PCMDHVA = ((MDHVAL10 - MDHVAL00)/MDHVAL00) * 100,
+      PCMDRVA = ((MDRVAL10 - MDRVAL00)/MDRVAL00) * 100,
+      PCNOWN = ((PNOWN10 - PNOWN00)/PNOWN00) * 100,
+      PCNRENT = ((PNRENT10 - PNRENT00)/PNRENT00) * 100
+    ) %>%
+    mutate(across(starts_with("PC_"), ~na_if(., Inf)))
+}
+
+compute_pctchg_90T00 <- function(x) { 
+  x %>%       
+    mutate(
+      PCOWN = ((POWN00 - POWN90)/POWN00) * 100,
+      PCCOLL = ((PCOLL00 - PCOLL90)/PCOLL90) * 100,
+      PCMDHIN = ((MDHINC00 - MDHINC90)/MDHINC90) * 100,
+      PCMDHVA = ((MDHVAL00 - MDHVAL90)/MDHVAL90) * 100,
+      PCMDRVA = ((MDRVAL00 - MDRVAL90)/MDRVAL90) * 100,
+      PCNOWN = ((PNOWN00 - PNOWN90)/PNOWN90) * 100,
+      PCNRENT = ((PNRENT00 - PNRENT90)/PNRENT90) * 100
     ) %>%
     mutate(across(starts_with("PC_"), ~na_if(., Inf)))
 }
 
 
-tracts_us_00to10 <- census_tracts %>%
-  left_join(., all10_tract_fmt,  by = c("GEOID10" = "GEOID")
-            ) %>%
-  left_join(., acs19_tract_fmt, by = c("GEOID10" = "GEOID") 
-            ) %>% 
-  compute_pctchg(.) 
-## ADD CITY MEASURES
-## CREATE GENTRIFICATION MEASURES
+## 2010 to 2020
+tracts_us_10to20 <- all10_tract_for_chg %>%
+  left_join(., acs19_tract_for_chg, by = "GEOID") %>%
+  compute_pctchg_10T20(.)  %>%
+  left_join(., all_geog_identifiers_per_tract, by =  "GEOID") %>% 
+  mutate(placefp10 = as.character(placefp10),
+         place = str_pad(placefp10, width = 5, side = "left", pad = "0"), 
+         STATE = str_sub(GEOID, end = 2),
+         place = str_c(STATE, place, sep = "")
+  ) %>%
+  right_join(., class_places_vars_10T20, by = c("place" = "PLACEFP")
+             ) %>%
+  mutate(GENT_ELIG = if_else(MDHINC10 < CMDHINC10,
+                             "Gentrifiable",
+                             "Not Gentrifiable"),
+         HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
+                           "Yes", 
+                           "No"),
+         HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
+                            "Yes", 
+                            "No"),
+         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                            "Gentrifying",
+                            "Not Gentrifying"
+         ),
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+                            "Not Gentrifiable",
+                            GENTRIFY
+         )
+  ) %>%
+  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
+  mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
+  mutate(PERIOD = "2010 - 2020"
+         ) %>%
+  relocate(PERIOD,
+           GEOID,
+           CITY
+           )
 
+## 2000 TO 2010 
+tracts_us_00to10 <- census00_tract_for_chg %>%
+  left_join(., all10_tract_for_chg, by = "GEOID") %>%
+  compute_pctchg_00T10(.)  %>%
+  left_join(., all_geog_identifiers_per_tract, by =  "GEOID") %>% 
+  mutate(placefp10 = as.character(placefp10),
+         place = str_pad(placefp10, width = 5, side = "left", pad = "0"), 
+         STATE = str_sub(GEOID, end = 2),
+         place = str_c(STATE, place, sep = "")
+  ) %>%
+  right_join(., class_places_vars_00T10, by = c("place" = "PLACEFP")
+  ) %>%
+  mutate(GENT_ELIG = if_else(MDHINC00 < CMDHINC00,
+                             "Gentrifiable",
+                             "Not Gentrifiable"),
+         HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
+                          "Yes", 
+                          "No"),
+         HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
+                         "Yes", 
+                         "No"),
+         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                            "Gentrifying",
+                            "Not Gentrifying"
+         ),
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+                            "Not Gentrifiable",
+                            GENTRIFY
+         )
+  ) %>%
+  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
+  mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
+  mutate(PERIOD = "2000 - 2010"
+  ) %>%
+  relocate(PERIOD,
+           GEOID,
+           CITY
+  )
+
+## 1990 to 2000
+tracts_us_90to00 <- census90_tract_for_chg %>%
+  left_join(., census00_tract_for_chg, by = "GEOID") %>%
+  compute_pctchg_90T00(.)  %>%
+  left_join(., all_geog_identifiers_per_tract, by =  "GEOID") %>% 
+  mutate(placefp10 = as.character(placefp10),
+         place = str_pad(placefp10, width = 5, side = "left", pad = "0"), 
+         STATE = str_sub(GEOID, end = 2),
+         place = str_c(STATE, place, sep = "")
+  ) %>%
+  right_join(., class_places_vars_90T00, by = c("place" = "PLACEFP")
+  ) %>%
+  mutate(GENT_ELIG = if_else(MDHINC90 < CMDHINC90,
+                             "Gentrifiable",
+                             "Not Gentrifiable"),
+         HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
+                          "Yes", 
+                          "No"),
+         HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
+                         "Yes", 
+                         "No"),
+         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                            "Gentrifying",
+                            "Not Gentrifying"
+         ),
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+                            "Not Gentrifiable",
+                            GENTRIFY
+         )
+  ) %>%
+  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
+  mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
+  mutate(PERIOD = "1990 - 2000"
+  ) %>%
+  relocate(PERIOD,
+           GEOID,
+           CITY
+  )
+
+
+# STACK ALL DECADES
+class_tracts_gent_by_decade <- bind_rows(
+  tracts_us_90to00,
+  tracts_us_00to10,
+  tracts_us_10to20
+)
+
+class_tracts_gent_by_decade_shp <- census_tracts %>% 
+  select(GEOID10, TRACTCE10) %>%
+  right_join(., class_tracts_gent_by_decade, by = c("GEOID10" = "GEOID")
+             )
+  
+
+# EXPORT GENTRIFICATION PERIODS SHAPEFILES--------------------------------------
+sf_tracts_gent_by_decade <- class_tracts_gent_by_decade_shp %>%
+  filter(CITY == "San Francisco city" & GEOID10 != "06075980401") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+         )
+st_write(sf_tracts_gent_by_decade, "San_Francisco_tracts_gentrification_by_decade.shp")
 
 
 # View shapefile
 gent_pal <- colorFactor(
   palette = c('darkorchid4', 'darkgrey', 'violet'),
-  domain = excelsior_bg$GENTRIFY
+  domain = excelsior_tract$GENTRIFY
 )
 
 leaflet() %>%
@@ -597,6 +760,3 @@ leaflet() %>%
               fillOpacity = 0.7,
               label = ~(GENTRIFY)
   )
-
-# EXPORT SHAPEFILES-------------------------------------------------------------
-st_write(excelsior_bg, "Excelsior_blckgrps_gentrification.shp")
