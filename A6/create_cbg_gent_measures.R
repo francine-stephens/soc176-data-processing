@@ -346,7 +346,7 @@ excelsior_bg_10to20 <- excelsior_bg_10to20 %>%
 
 
 excelsior_bg <- excelsior_bg_10to20 %>%
-  mutate(GENT_ELIG = if_else(MD_HINC10 > CMD_HINC10,
+  mutate(GENT_ELIG = if_else(MD_HINC10 < CMD_HINC10,
                              "Gentrifiable",
                              "Not Gentrifiable"),
          HG_HVAL = if_else(PC_MDHVA > CPC_MDHVA | PC_MDRVA > CPC_MDRVA,
@@ -370,7 +370,7 @@ excelsior_bg <- excelsior_bg_10to20 %>%
 
 
 # CLASS BLOCK GROUPS
-class_bg_10to20 <- bg_us_00to10 %>%
+class_bg_10to20 <- bg_us_10to20 %>%
   mutate(tractid = str_c(STATEFP10,
                          COUNTYFP10,
                          TRACTCE10, 
