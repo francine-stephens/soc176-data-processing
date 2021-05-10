@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/30/21
-# LAST UPDATED: 5/4/21
+# LAST UPDATED: 5/9/21
 #-------------------------------------------------------------------------------
 
 
@@ -612,28 +612,48 @@ tracts_us_10to20 <- all10_tract_for_chg %>%
   ) %>%
   right_join(., class_places_vars_10T20, by = c("place" = "PLACEFP")
              ) %>%
-  mutate(GENT_ELIG = if_else(MDHINC10 < CMDHINC10,
-                             "Gentrifiable",
-                             "Not Gentrifiable"),
+  mutate(ELIG = if_else(MDHINC10 < CMDHINC10,
+                        "Gentrifiable",
+                        "Not Gentrifiable"), 
+         ELIG = if_else(is.na(ELIG),
+                        "Not Gentrifiable",
+                        ELIG),
          HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
-                           "Yes", 
-                           "No"),
+                          "grew faster", 
+                          "did not grow faster"),
+         HGHVAL = if_else(is.na(HGHVAL),
+                          "did not grow faster",
+                          HGHVAL),
          HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
-                            "Yes", 
-                            "No"),
-         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                            "grew faster", 
+                            "did not grow faster"), 
+         HGSES = if_else(is.na(HGSES),
+                         "did not grow faster", 
+                         HGSES),
+         GENTRIFY = if_else(ELIG == "Gentrifiable" & (HGHVAL == "grew faster" & HGSES == "grew faster"),
                             "Gentrifying",
                             "Not Gentrifying"
          ),
-         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & ELIG == "Not Gentrifiable",
                             "Not Gentrifiable",
                             GENTRIFY
          )
   ) %>%
-  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  select(GEOID,
+         CITY,
+         PCOLL10,
+         MDHINC10,
+         MDHVAL10,
+         MDRVAL10, 
+         PCOLL20,
+         MDHINC20, 
+         MDHVAL20,
+         MDRVAL20, 
+         PCCOLL:PCMDRVA,
+         ELIG:GENTRIFY) %>%
   mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
   mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
-  mutate(PERIOD = "2010 - 2020"
+  mutate(PERIOD = "2010 to 2020"
          ) %>%
   relocate(PERIOD,
            GEOID,
@@ -652,28 +672,48 @@ tracts_us_00to10 <- census00_tract_for_chg %>%
   ) %>%
   right_join(., class_places_vars_00T10, by = c("place" = "PLACEFP")
   ) %>%
-  mutate(GENT_ELIG = if_else(MDHINC00 < CMDHINC00,
+  mutate(ELIG = if_else(MDHINC00 < CMDHINC00,
                              "Gentrifiable",
                              "Not Gentrifiable"),
+         ELIG = if_else(is.na(ELIG),
+                        "Not Gentrifiable",
+                        ELIG),
          HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
-                          "Yes", 
-                          "No"),
+                          "grew faster", 
+                          "did not grow faster"),
+         HGHVAL = if_else(is.na(HGHVAL),
+                          "did not grow faster",
+                          HGHVAL),
          HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
-                         "Yes", 
-                         "No"),
-         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                         "grew faster", 
+                         "did not grow faster"), 
+         HGSES = if_else(is.na(HGSES),
+                         "did not grow faster", 
+                         HGSES),
+         GENTRIFY = if_else(ELIG == "Gentrifiable" & (HGHVAL == "grew faster" & HGSES == "grew faster"),
                             "Gentrifying",
                             "Not Gentrifying"
          ),
-         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & ELIG == "Not Gentrifiable",
                             "Not Gentrifiable",
                             GENTRIFY
          )
   ) %>%
-  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  select(GEOID,
+         CITY,
+         PCOLL00,
+         MDHINC00, 
+         MDHVAL00,
+         MDRVAL00,
+         PCOLL10,
+         MDHINC10,
+         MDHVAL10,
+         MDRVAL10,
+         PCCOLL:PCMDRVA,
+         ELIG:GENTRIFY) %>%
   mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
   mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
-  mutate(PERIOD = "2000 - 2010"
+  mutate(PERIOD = "2000 to 2010"
   ) %>%
   relocate(PERIOD,
            GEOID,
@@ -692,28 +732,48 @@ tracts_us_90to00 <- census90_tract_for_chg %>%
   ) %>%
   right_join(., class_places_vars_90T00, by = c("place" = "PLACEFP")
   ) %>%
-  mutate(GENT_ELIG = if_else(MDHINC90 < CMDHINC90,
-                             "Gentrifiable",
-                             "Not Gentrifiable"),
+  mutate(ELIG = if_else(MDHINC90 < CMDHINC90,
+                        "Gentrifiable",
+                        "Not Gentrifiable"),
+         ELIG = if_else(is.na(ELIG),
+                        "Not Gentrifiable",
+                        ELIG),
          HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
-                          "Yes", 
-                          "No"),
+                          "grew faster", 
+                          "did not grow faster"),
+         HGHVAL = if_else(is.na(HGHVAL),
+                          "did not grow faster",
+                          HGHVAL),
          HGSES = if_else(PCCOLL > CPCCOLL | PCMDHIN > CPCMDHIN,
-                         "Yes", 
-                         "No"),
-         GENTRIFY = if_else(GENT_ELIG == "Gentrifiable" & (HGHVAL == "Yes" & HGSES == "Yes"),
+                         "grew faster", 
+                         "did not grow faster"), 
+         HGSES = if_else(is.na(HGSES),
+                         "did not grow faster", 
+                         HGSES),
+         GENTRIFY = if_else(ELIG == "Gentrifiable" & (HGHVAL == "grew faster" & HGSES == "grew faster"),
                             "Gentrifying",
                             "Not Gentrifying"
          ),
-         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & GENT_ELIG == "Not Gentrifiable",
+         GENTRIFY = if_else(GENTRIFY == "Not Gentrifying" & ELIG == "Not Gentrifiable",
                             "Not Gentrifiable",
                             GENTRIFY
          )
   ) %>%
-  select(GEOID, CITY, PCOWN:PCNRENT, GENT_ELIG:GENTRIFY) %>%
+  select(GEOID,
+         CITY,
+         PCOLL90,
+         MDHINC90,
+         MDHVAL90,
+         MDRVAL90, 
+         PCOLL00,
+         MDHINC00, 
+         MDHVAL00,
+         MDRVAL00,
+         PCCOLL:PCMDRVA,
+         ELIG:GENTRIFY) %>%
   mutate(across(where(is.numeric), ~replace(., is.nan(.), NA))) %>%
   mutate(across(where(is.numeric), ~replace(., is.infinite(.), NA))) %>%
-  mutate(PERIOD = "1990 - 2000"
+  mutate(PERIOD = "1990 to 2000"
   ) %>%
   relocate(PERIOD,
            GEOID,
@@ -732,15 +792,48 @@ class_tracts_gent_by_decade_shp <- census_tracts %>%
   select(GEOID10, TRACTCE10) %>%
   right_join(., class_tracts_gent_by_decade, by = c("GEOID10" = "GEOID")
              )
+
+class_tracts_gent_90t00_shp <- census_tracts %>% 
+  select(GEOID10, TRACTCE10) %>%
+  right_join(., tracts_us_90to00, by = c("GEOID10" = "GEOID")
+  )
+  
+class_tracts_gent_00t10_shp <- census_tracts %>% 
+  select(GEOID10, TRACTCE10) %>%
+  right_join(., tracts_us_00to10, by = c("GEOID10" = "GEOID")
+  )
+  
+class_tracts_gent_10t20_shp <- census_tracts %>% 
+  select(GEOID10, TRACTCE10) %>%
+  right_join(., tracts_us_10to20, by = c("GEOID10" = "GEOID")
+  )
   
 
 # EXPORT GENTRIFICATION PERIODS SHAPEFILES--------------------------------------
+## SF 
 sf_tracts_gent_by_decade <- class_tracts_gent_by_decade_shp %>%
   filter(CITY == "San Francisco city" & GEOID10 != "06075980401") %>%
   mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
          )
 st_write(sf_tracts_gent_by_decade, "San_Francisco_tracts_gentrification_by_decade.shp")
 
+sf_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "San Francisco city" & GEOID10 != "06075980401") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sf_tracts_gent_90t00, "San_Francisco_tracts_gent_1990_2000.shp")
+
+sf_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "San Francisco city" & GEOID10 != "06075980401") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sf_tracts_gent_00t10, "San_Francisco_tracts_gent_2000_2010.shp")
+
+sf_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "San Francisco city" & GEOID10 != "06075980401") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sf_tracts_gent_10t20, "San_Francisco_tracts_gent_2010_2020.shp")
 
 # View shapefile
 gent_pal <- colorFactor(
