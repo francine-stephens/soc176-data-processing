@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/30/21
-# LAST UPDATED: 5/9/21
+# LAST UPDATED: 5/10/21
 #-------------------------------------------------------------------------------
 
 
@@ -161,9 +161,7 @@ mutate_tract_id <- function(x) {
 create_key_vars <- function(x) { 
   x %>%       
     mutate(PCOLL = (COLL/POP_O25) * 100,
-           POWN = (HU_OWN/HU_OCC) * 100,
-           PNOWN = (NOWN/HU_OWN) * 100,
-           PNRENT = (NRENT/HU_RENT) * 100
+           POWN = (HU_OWN/HU_OCC) * 100
     ) %>% 
     rename_at(vars(MD_HINC, MD_HVAL, MD_RVAL), function(x) gsub("_", "", x)) %>%
     select(GEOID,
@@ -174,10 +172,6 @@ create_key_vars <- function(x) {
            HU_OWN,
            POWN, 
            HU_RENT,
-           NOWN,
-           PNOWN,
-           NRENT,
-           PNRENT,
            MDHVAL,
            MDRVAL
     ) 
@@ -384,9 +378,7 @@ compute_place_pctchg90T00 <- function(x) {
       CPCCOLL = ((CPCOLL00 - CPCOLL90)/CPCOLL90) * 100,
       CPCMDHIN = ((CMDHINC00 - CMDHINC90)/CMDHINC90) * 100,
       CPCMDHVA = ((CMDHVAL00 - CMDHVAL90)/CMDHVAL90) * 100,
-      CPCMDRVA = ((CMDRVAL00 - CMDRVAL90)/CMDRVAL90) * 100,
-      CPCNOWN = ((CPNOWN00 - CPNOWN90)/CPNOWN90) * 100,
-      CPCNRENT = ((CPNRENT00 - CPNRENT90)/CPNRENT90) * 100
+      CPCMDRVA = ((CMDRVAL00 - CMDRVAL90)/CMDRVAL90) * 100
     ) %>%
     mutate(across(starts_with("CPC_"), ~na_if(., Inf)))
 }
@@ -460,10 +452,6 @@ census00_place_for_chg <- census00_place %>%
   
   # 1990
 census90_place_for_chg <- census90_place %>%
-  mutate(
-    NRENT = (RENT_AFTER1989 + RENT_1985T1988 + RENT_1980T1984),
-    NOWN = (OWN_AFTER1989 + OWN_1985T1988 + OWN_1980T1984)
-  ) %>%
   create_key_vars(.) %>%
   format_place_identifier(.) %>%
   relocate(PLACEFP, .before = "GEOID") %>%
@@ -482,6 +470,11 @@ class_places_vars_10T20 <- all10_place_for_chg %>%
   rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
   select(-GEOID)
 
+class_places_for_stack_10T20 <- class_places_vars_10T20 %>%
+  mutate(PERIOD = "2010 to 2020") %>%
+  select(PLACEFP, CITY, PERIOD, CPCCOLL:CPCMDRVA)
+
+
 # 2000 & 2010
 class_places_vars_00T10 <-  census00_place_for_chg %>%
   left_join(., all10_place_for_chg, by = c("PLACEFP", "GEOID")
@@ -489,6 +482,11 @@ class_places_vars_00T10 <-  census00_place_for_chg %>%
   compute_place_pctchg00T10(.) %>%
   rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>%
   select(-GEOID)
+
+class_places_for_stack_00T10 <- class_places_vars_00T10 %>%
+  mutate(PERIOD = "2000 to 2010") %>%
+  select(PLACEFP, CITY, PERIOD, CPCCOLL:CPCMDRVA)
+
 
 # 1990 & 2000
 class_places_vars_90T00 <-  census90_place_for_chg %>%
@@ -498,9 +496,21 @@ class_places_vars_90T00 <-  census90_place_for_chg %>%
   rename_at(vars(starts_with("PC_")), function(x) paste0("C", x)) %>% 
   select(-GEOID)
 
-# MSAMD
+class_places_for_stack_90T00 <- class_places_vars_90T00 %>%
+  mutate(PERIOD = "1990 to 2000") %>%
+  select(PLACEFP, CITY, PERIOD, CPCCOLL:CPCMDRVA)
 
 
+## STACK CITY CHANGE VARIABLES
+stacked_gent_indicators_city_change <- bind_rows(class_places_for_stack_90T00,
+          class_places_for_stack_00T10,
+          class_places_for_stack_10T20)
+
+gent_indicators_city_change_stacked <- stacked_gent_indicators_city_change %>%
+  arrange(CITY, PERIOD) %>%
+  mutate(across(where(is.numeric), ~percent(., accuracy = 0.01, scale = 1, suffix = "%", decimal.mark = ".")))
+write_csv(gent_indicators_city_change_stacked,
+          "city_decade_pchg_gent_indicators2.csv")
 
 
 ## CREATE SHAPEFILES------------------------------------------------------------
@@ -592,9 +602,7 @@ compute_pctchg_90T00 <- function(x) {
       PCCOLL = ((PCOLL00 - PCOLL90)/PCOLL90) * 100,
       PCMDHIN = ((MDHINC00 - MDHINC90)/MDHINC90) * 100,
       PCMDHVA = ((MDHVAL00 - MDHVAL90)/MDHVAL90) * 100,
-      PCMDRVA = ((MDRVAL00 - MDRVAL90)/MDRVAL90) * 100,
-      PCNOWN = ((PNOWN00 - PNOWN90)/PNOWN90) * 100,
-      PCNRENT = ((PNRENT00 - PNRENT90)/PNRENT90) * 100
+      PCMDRVA = ((MDRVAL00 - MDRVAL90)/MDRVAL90) * 100
     ) %>%
     mutate(across(starts_with("PC_"), ~na_if(., Inf)))
 }
@@ -741,6 +749,9 @@ tracts_us_90to00 <- census90_tract_for_chg %>%
          HGHVAL = if_else(PCMDHVA > CPCMDHVA | PCMDRVA > CPCMDRVA,
                           "grew faster", 
                           "did not grow faster"),
+         HGHVAL = if_else(is.na(PCMDHVA) & is.na(PCMDRVA),
+                          "did not grow faster",
+                          HGHVAL),
          HGHVAL = if_else(is.na(HGHVAL),
                           "did not grow faster",
                           HGHVAL),
@@ -835,15 +846,277 @@ sf_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
   )
 st_write(sf_tracts_gent_10t20, "San_Francisco_tracts_gent_2010_2020.shp")
 
+## SJ
+sj_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "San Jose city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sj_tracts_gent_90t00, "San_Jose_tracts_gent_1990_2000.shp")
+
+sj_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "San Jose city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sj_tracts_gent_00t10, "San_Jose_tracts_gent_2000_2010.shp")
+
+sj_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "San Jose city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sj_tracts_gent_10t20, "San_Jose_tracts_gent_2010_2020.shp")
+
+## OAKLAND
+oak_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Oakland city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(oak_tracts_gent_90t00, "Oakland_tracts_gent_1990_2000.shp")
+
+oak_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Oakland city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(oak_tracts_gent_00t10, "Oakland_tracts_gent_2000_2010.shp")
+
+oak_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Oakland city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(oak_tracts_gent_10t20, "Oakland_tracts_gent_2010_2020.shp")
+
+## Fremont
+fremont_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Fremont city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(fremont_tracts_gent_90t00, "Fremont_tracts_gent_1990_2000.shp")
+
+fremont_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Fremont city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(fremont_tracts_gent_00t10, "Fremont_tracts_gent_2000_2010.shp")
+
+fremont_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Fremont city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(fremont_tracts_gent_10t20, "Fremont_tracts_gent_2010_2020.shp")
+
+## San Mateo
+sm_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "San Mateo city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sm_tracts_gent_90t00, "San_Mateo_tracts_gent_1990_2000.shp")
+
+sm_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "San Mateo city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sm_tracts_gent_00t10, "San_Mateo_tracts_gent_2000_2010.shp")
+
+sm_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "San Mateo city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(sm_tracts_gent_10t20, "San_Mateo_tracts_gent_2010_2020.shp")
+
+## EPA
+epa_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "East Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(epa_tracts_gent_90t00, "East_Palo_Alto_tracts_gent_1990_2000.shp")
+
+epa_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "East Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(epa_tracts_gent_00t10, "East_Palo_Alto_tracts_gent_2000_2010.shp")
+
+epa_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "East Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(epa_tracts_gent_10t20, "East_Palo_Alto_tracts_gent_2010_2020.shp")
+
+## PA
+pa_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(pa_tracts_gent_90t00, "Palo_Alto_tracts_gent_1990_2000.shp")
+
+class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Palo Alto city") %>% 
+  summarize(city_median_hinc = median(MDHINC90))
+
+pa_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(pa_tracts_gent_00t10, "Palo_Alto_tracts_gent_2000_2010.shp")
+
+pa_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Palo Alto city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(pa_tracts_gent_10t20, "Palo_Alto_tracts_gent_2010_2020.shp")
+         
+         
+## CHINO
+chino_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Chino city") %>%
+  mutate(HGHVAL = if_else(is.na(PCMDHVA) & is.na(PCMDRVA),
+                          "did not grow faster",
+                          HGHVAL),
+         GENTRIFY = if_else(HGHVAL == "did not grow faster" & HGSES == "grew faster" & ELIG == "Gentrifiable",
+                            "Not Gentrifying",
+                            GENTRIFY)
+  )
+st_write(chino_tracts_gent_90t00, "Chino_tracts_gent_1990_2000.shp")
+
+chino_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Chino city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(chino_tracts_gent_00t10, "Chino_tracts_gent_2000_2010.shp")
+
+chino_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Chino city") %>%
+  mutate(GENTRIFY = replace_na(GENTRIFY, "Gentrifying")
+  )
+st_write(chino_tracts_gent_10t20, "Chino_tracts_gent_2010_2020.shp")
+
+## Westminster
+west_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Westminster city")
+st_write(west_tracts_gent_90t00, "Westminster_tracts_gent_1990_2000.shp")
+
+west_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Westminster city")
+st_write(west_tracts_gent_00t10, "Westminster_tracts_gent_2000_2010.shp")
+
+west_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Westminster city")
+st_write(west_tracts_gent_10t20, "Westminster_tracts_gent_2010_2020.shp")
+
+## LA
+la_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Los Angeles city")
+st_write(la_tracts_gent_90t00, "Los_Angeles_tracts_gent_1990_2000.shp")
+
+la_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Los Angeles city")
+st_write(la_tracts_gent_00t10, "Los_Angeles_tracts_gent_2000_2010.shp")
+
+la_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Los Angeles city")
+st_write(la_tracts_gent_10t20, "Los_Angeles_tracts_gent_2010_2020.shp")
+
+## BAKERSFIELD 
+bake_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Bakersfield city")
+st_write(bake_tracts_gent_90t00, "Bakersfield_tracts_gent_1990_2000.shp")
+
+bake_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Bakersfield city")
+st_write(bake_tracts_gent_00t10, "Bakersfield_tracts_gent_2000_2010.shp")
+
+bake_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Bakersfield city")
+st_write(bake_tracts_gent_10t20, "Bakersfield_tracts_gent_2010_2020.shp")
+
+
+## KC 
+kc_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Kansas City city") %>%
+  mutate(HGSES = if_else(is.na(PCCOLL) & is.na(PCMDHIN),
+                         "did not grow faster",
+                         HGSES),
+         HGHVAL = if_else(is.na(PCMDHVA) & is.na(PCMDRVA),
+                          "did not grow faster",
+                          HGHVAL),
+         GENTRIFY = if_else(HGHVAL == "did not grow faster" & HGSES == "grew faster" & ELIG == "Gentrifiable",
+                            "Not Gentrifying",
+                            GENTRIFY),
+         GENTRIFY = if_else(HGHVAL == "did not grow faster" & HGSES == "did not grow faster" & ELIG == "Gentrifiable",
+                            "Not Gentrifying",
+                            GENTRIFY)
+  )
+st_write(kc_tracts_gent_90t00, "Kansas_City_tracts_gent_1990_2000.shp")
+
+kc_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Kansas City city")
+st_write(kc_tracts_gent_00t10, "Kansas_City_tracts_gent_2000_2010.shp")
+
+kc_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Kansas City city")
+st_write(kc_tracts_gent_10t20, "Kansas_City_tracts_gent_2010_2020.shp")
+
+## YAKIMA
+yakima_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Yakima city")
+st_write(yakima_tracts_gent_90t00, "Yakima_tracts_gent_1990_2000.shp")
+
+yakima_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Yakima city")
+st_write(yakima_tracts_gent_00t10, "Yakima_tracts_gent_2000_2010.shp")
+
+yakima_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Yakima city")
+st_write(yakima_tracts_gent_10t20, "Yakima_tracts_gent_2010_2020.shp")
+
+## PITTSBURGH
+pitt_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Pittsburgh city")
+st_write(pitt_tracts_gent_90t00, "Pittsburgh_tracts_gent_1990_2000.shp")
+
+pitt_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Pittsburgh city")
+st_write(pitt_tracts_gent_00t10, "Pittsburgh_tracts_gent_2000_2010.shp")
+
+pitt_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Pittsburgh city")
+st_write(pitt_tracts_gent_10t20, "Pittsburgh_tracts_gent_2010_2020.shp")
+
+## DETROIT
+detroit_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Detroit city")
+st_write(detroit_tracts_gent_90t00, "Detroit_tracts_gent_1990_2000.shp")
+
+detroit_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Detroit city")
+st_write(detroit_tracts_gent_00t10, "Detroit_tracts_gent_2000_2010.shp")
+
+detroit_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Detroit city")
+st_write(detroit_tracts_gent_10t20, "Detroit_tracts_gent_2010_2020.shp")
+
+## DENVER
+denver_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
+  filter(CITY == "Denver city")
+st_write(denver_tracts_gent_90t00, "Denver_tracts_gent_1990_2000.shp")
+
+denver_tracts_gent_00t10 <- class_tracts_gent_00t10_shp %>%
+  filter(CITY == "Denver city")
+st_write(denver_tracts_gent_00t10, "Denver_tracts_gent_2000_2010.shp")
+
+denver_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
+  filter(CITY == "Denver city")
+st_write(denver_tracts_gent_10t20, "Denver_tracts_gent_2010_2020.shp")
+
+
 # View shapefile
 gent_pal <- colorFactor(
   palette = c('darkorchid4', 'darkgrey', 'violet'),
-  domain = excelsior_tract$GENTRIFY
+  domain = la_tracts_gent_00t10$GENTRIFY
 )
 
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = excelsior_bg %>% 
+  addPolygons(data = la_tracts_gent_00t10 %>% 
                 st_transform(., crs = 4326),
               fillColor = ~gent_pal(GENTRIFY),
               weight = 2,
