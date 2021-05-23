@@ -4,7 +4,7 @@
 # GEOGRAPHIES CREATED: Census Tracts, Neighborhoods
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/11/21
-# LAST UPDATED: 4/20/21
+# LAST UPDATED: 5/23/21
 #-------------------------------------------------------------------------------
 
 ## LIBRARIES
@@ -45,14 +45,6 @@ census_tracts <- st_read(paste0(shp_repo,
 state_codes <- c(state.abb, "DC")
 
 us_tracts <- map_df(state_codes, ~tracts(state = .x, cb = TRUE))
-
-# test the tracts shapefile
-leaflet() %>%
-  addTiles() %>%
-  addPolygons(data = us_tracts %>%
-                filter(GEOID == "06029001600") %>%
-                st_transform(., crs = 4326) 
-  )
 
 
 # SOCIAL LIFE OF NEIGHBORHOOD CENSUS TRACTS------------------------------------- 
@@ -180,14 +172,24 @@ st_write(becky_downtown_bakersfield, "nhood_downtown_bakersfield.shp")
 
 
 ## My neighborhood
-census_tracts <- c("06075026100", 
-                   "06075026301",
-                   "06075026004",
-                   "06075026001",
-                   "06075025500")
-excelsior <- sf_hoods %>%
-  filter(geoid %in% census_tracts) %>%
+my_census_tracts <- c("06075025500",
+                      "06075026100",
+                      "06075026301",
+                      "06075026004",
+                      "06075026001",
+                      "06075026003",
+                      "06075026002")
+excelsior <- us_tracts %>%
+  filter(GEOID %in% my_census_tracts) %>%
   mutate(nhood = "Excelsior") %>%
   group_by(nhood) %>%
   summarize(tracts = n())
+
+# test the tracts shapefile
+leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = excelsior %>%
+                st_transform(., crs = 4326) 
+  )
+
 st_write(excelsior, "excelsior_sf.shp")
