@@ -33,7 +33,6 @@ metros10_path <- "2010USA_CensusGeog_Shp/tl_2010_us_cbsa10/"
 blockgrps_path <- "2010USA_CensusGeog_Shp/us_blck_grp_2010/"
 student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/"
 LTDB_geog_ids_path <- "C:/Users/Franc/Documents/Stanford/SOC176/soc176-data-processing/A5/LTDB_Std_All_fullcount/"
-##INSERT DATA PATHS HERE ##
 
 
 # APIs
