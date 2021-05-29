@@ -66,3 +66,15 @@ A6/BG_2000_ED_HHINC_HOME
 A6/BG_*
 A6/CT_*
 A6/PLACE_*
+
+# HOLC DATA Images
+storymap/KC_HOLC/area_descriptions/*
+storymap/KC_HOLC/KC_HOLC_area_descriptions.zip
+storymap/KC_HOLC/MO_GreaterKansasCity.png
+storymap/KC_HOLC/MOGreaterKansasCity1939/*
+storymap/KC_HOLC/rectified.zip
+storymap/KC_HOLC/Kansas_City_HOLC_grades_polygons.zip
+storymap/KC_HOLC/MOGreaterKansasCity1939.zip
+storymap/KC_HOLC/holc-scan-kcmo.jpg
+
+
