@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 5/28/21
-# LAST UPDATED: 5/30/21
+# LAST UPDATED: 5/29/21
 #-------------------------------------------------------------------------------
 
 
@@ -45,6 +45,7 @@ blck_grps <- st_read(paste0(shp_repo,
                             "US_blck_grp_2010.shp"),
                      quiet = F)
 
+
 excelsior_tracts <- c(25500, 
                       26001,
                       26002, 
@@ -68,8 +69,9 @@ fill <- c("#24B3A8",
           "#FFB077"
 )
 
+
 ## CLEAN DATA-------------------------------------------------------------------
-hh_cbg_data_prepped <- hh_cbg_data %>%
+hh_data_prep <- hh_data %>%
   mutate(Geo_FIPS = as.character(Geo_FIPS),
          Geo_FIPS = str_pad(Geo_FIPS, width = 12, side = "left", pad = "0")
   ) %>%
@@ -168,3 +170,4 @@ hh_size_stackedbars <- hh_city_data_prepped %>%
 ## EXPORTS----------------------------------------------------------------------
 st_write(hh_data_shp, "SF_blckgrps_hh_size.shp")
 ggsave("household_size_stacked_bargraph.png", hh_size_stackedbars)
+
