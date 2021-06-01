@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/30/21
-# LAST UPDATED: 5/10/21
+# LAST UPDATED: 6/1/21
 #-------------------------------------------------------------------------------
 
 
@@ -846,6 +846,45 @@ sf_tracts_gent_10t20 <- class_tracts_gent_10t20_shp %>%
   )
 st_write(sf_tracts_gent_10t20, "San_Francisco_tracts_gent_2010_2020.shp")
 
+    ## Super-gentrification
+sf_tracts_supergent_90t00 <- sf_tracts_gent_90t00 %>%
+  mutate(SUPER = if_else(
+    GENTRIFY == "Not Gentrifiable" & HGHVAL == "grew faster" & HGSES == "grew faster",
+    "Super-gentrifying",
+    GENTRIFY)
+    )
+
+sf_gent_status_90s_extract <- sf_tracts_supergent_90t00 %>% 
+  select(GEOID10, GENTRIFY90S = "GENTRIFY", SUPER90S = "SUPER") %>%
+  st_set_geometry(NULL)
+
+sf_tracts_supergent_00t10 <- sf_tracts_gent_00t10 %>% 
+  left_join(., sf_gent_status_90s_extract, by = "GEOID10") %>%
+  mutate(SUPER = if_else(
+    (SUPER90S == "Super-gentrifying" | SUPER90S == "Gentrifying") & GENTRIFY == "Not Gentrifiable" & HGHVAL == "grew faster" & HGSES == "grew faster",
+    "Super-gentrifying",
+    GENTRIFY)
+  ) %>%
+  select(-SUPER90S, -GENTRIFY90S)
+
+sf_gent_status_00s_extract <- sf_tracts_supergent_00t10 %>% 
+  select(GEOID10, GENTRIFY00S = "GENTRIFY", SUPER00S = "SUPER") %>%
+  st_set_geometry(NULL)
+
+sf_tracts_supergent_10t20 <- sf_tracts_gent_10t20 %>% 
+  left_join(., sf_gent_status_00s_extract, by = "GEOID10") %>%
+  mutate(SUPER = if_else(
+    (SUPER00S == "Super-gentrifying" | SUPER00S == "Gentrifying") & GENTRIFY == "Not Gentrifiable" & HGHVAL == "grew faster" & HGSES == "grew faster",
+    "Super-gentrifying",
+    GENTRIFY)
+  ) %>%
+  select(-SUPER00S, -GENTRIFY00S)
+
+st_write(sf_tracts_supergent_00t10, "San_Francisco_tracts_supergent_2000_2010.shp")
+st_write(sf_tracts_supergent_10t20, "San_Francisco_tracts_supergent_2010_2020.shp")
+
+
+
 ## SJ
 sj_tracts_gent_90t00 <- class_tracts_gent_90t00_shp %>%
   filter(CITY == "San Jose city") %>%
@@ -1110,19 +1149,19 @@ st_write(denver_tracts_gent_10t20, "Denver_tracts_gent_2010_2020.shp")
 
 # View shapefile
 gent_pal <- colorFactor(
-  palette = c('darkorchid4', 'darkgrey', 'violet'),
-  domain = la_tracts_gent_00t10$GENTRIFY
+  palette = c('darkorchid4', 'darkgrey', 'violet', 'green'),
+  domain = sf_tracts_supergent_10t20$SUPER
 )
 
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = la_tracts_gent_00t10 %>% 
+  addPolygons(data = sf_tracts_supergent_10t20 %>% 
                 st_transform(., crs = 4326),
-              fillColor = ~gent_pal(GENTRIFY),
+              fillColor = ~gent_pal(SUPER),
               weight = 2,
               opacity = 1,
               color = "white",
               dashArray = "3",
               fillOpacity = 0.7,
-              label = ~(GENTRIFY)
+              label = ~(SUPER)
   )
