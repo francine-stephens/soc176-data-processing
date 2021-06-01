@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/20/21
-# LAST UPDATED: 4/27/21
+# LAST UPDATED: 6/1/21
 #-------------------------------------------------------------------------------
 
 
@@ -744,6 +744,9 @@ sf_tracts_all_decades_seg_exp <- census_tracts %>%
   filter(GEOID10 != "06075980401") %>%
   mutate(divergence = rescale(divergence, to = c(0, 1.00)))
 st_write(sf_tracts_all_decades_seg_exp, "san_francisco_tracts_divergence.shp")
+
+  ## Output 2020 sf tracts racial composition data for story map analysis
+write_csv(sf_tracts_pr_2000, "san_francisco_2020_tracts_race.csv")
 
 
 ## LA
