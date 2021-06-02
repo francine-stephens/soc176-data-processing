@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 6/1/21
-# LAST UPDATED: 6/1/21
+# LAST UPDATED: 6/2/21
 #-------------------------------------------------------------------------------
 
 
@@ -78,10 +78,9 @@ fborn_fill <- c("#B768A2",
                 "#F5C71A"
                 )
 
-lang_fill <- c("#F5C71A",
-               "#C8A2C8",
-               "#24B3A8",
-               "#FFB077"
+lep_fill <- c(
+              "#C8A2C8",
+              "#24B3A8"
 )
 
 ## CLEAN DATA-------------------------------------------------------------------
@@ -165,7 +164,7 @@ excelsior_language_long <- citizen_lang_data %>%
                             Status == "LEP" ~ "Limited English Proficiency"
                             )
          ) %>%
-  group_by(Status) %>%
+  group_by(Lang) %>%
   mutate(prop = (count/sum(count)),
          percentage = round(prop, digits=2)*100) %>%
   ungroup() %>%
@@ -273,49 +272,47 @@ nativity_pie <- ggplot(excelsior_foreignborn_long,
 
 ggsave("nativity_piechart.png", nativity_pie)
 
-# Pie chart lang diversity
-  ggplot(excelsior_language_long,
-         aes(
-           x = "", 
-           y = prop, 
-           fill = Lang
-         )
-  ) + 
-  geom_bar(
-    stat = "identity",
-    position = position_fill()
-  ) +  
-  geom_col(size=.8) +
-  geom_text(
-    aes(label = paste0(round(prop*100),"%")), 
-    position = position_fill(vjust = 0.5),
-    family = "Tahoma",
-    color="black",
-    fontface = "bold"
-  ) +
-  facet_wrap(~ Status) + 
-  coord_polar(theta = "y") +
-  scale_fill_manual(values=lang_fill) +
-  theme_classic() +
-  theme(
-    axis.title.x = element_blank(),
-    axis.title.y = element_blank(),
-    legend.position = 'bottom',
-    axis.text = element_blank(),
-    axis.line = element_blank(), 
-    plot.title = element_text(hjust=0.5),
-    axis.ticks = element_blank()
-  ) +
-  theme(
-    plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
-    text=element_text(family="Tahoma")
-  ) + 
-  labs(
-    fill = "Native Language",
-    title = "Languages Spoken in Excelsior",
-    #subtitle = "Half of the residents in Excelsior are foreign-born and the majority have citizenship.",
-    caption = "Data Sources: ACS 2019 5-Year Estimates"
-  ) 
 
+# Stacked Bar chart lang proficiency
+language_lep_stackedbars <- ggplot(excelsior_language_long,
+       aes(
+    x = Lang,
+    y = prop,
+    fill = Status,  
+    label = paste0(percentage, "%")
+  )) +
+    geom_bar(
+      stat = "identity",
+      position = position_fill(reverse = TRUE)
+    ) +  
+  geom_text(position = position_stack(vjust = 0.5, reverse = TRUE),
+            family = "Tahoma",
+            color="white",
+            size=3,
+            fontface = "bold") +
+    scale_fill_manual(values=lep_fill) +
+    scale_y_continuous(labels = label_percent(scale = 100, suffix = "%")) + 
+    labs(
+      x = "Language",
+      y = "Households",
+      title = "English Proficiency by Native Language",
+      caption = "Data Sources: ACS 2019 5-Year Estimates"
+      ) +
+    coord_flip() + 
+    theme_bw() +
+    theme(
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.title = element_blank()
+    ) + 
+    theme(axis.line = element_line(size=1, colour = "black"),
+          panel.grid.major = element_line(colour = "#d3d3d3"), panel.grid.minor = element_blank(),
+          panel.border = element_blank(), panel.background = element_blank()) +
+    theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+          text=element_text(family="Tahoma"),
+          axis.text.x=element_text(colour="black", size = 10),
+          axis.text.y=element_text(colour="black", size = 10),
+          axis.title.y = element_text(angle=0, vjust = 0.5))
 
+ggsave("language_lep.png", language_lep_stackedbars)
 
