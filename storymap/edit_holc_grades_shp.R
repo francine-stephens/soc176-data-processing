@@ -3,7 +3,7 @@
 #
 # FRANCINE STEPHENS
 # DATE CREATED: 5/28/2021
-# DATE LAST UPDATED: 5/28/2021
+# DATE LAST UPDATED: 6/3/2021
 #-------------------------------------------------------------------------------
 
 # SET-UP------------------------------------------------------------------------
@@ -19,7 +19,8 @@ packages <- c(
   "leaflet",
   "lubridate",
   "rsegregation",
-  "scales"
+  "scales",
+  "mapboxapi"
 )
 lapply(packages, library, character.only = T)
 
@@ -27,11 +28,14 @@ lapply(packages, library, character.only = T)
 ## PATHS
 setwd("~/Stanford/SOC176/soc176-data-processing/storymap")
 wd <- getwd()
-city_holc_path <- "/KC_HOLC"                              # CHANGE CITY
-shp_path <- "/MOGreaterKansasCity1939/cartodb-query.shp"   # CHANGE SHAPEFILE
+city_holc_path <- "/OAKLAND_HOLC"                # CHANGE CITY
+shp_path <- "/CAOakland1937/cartodb-query.shp"   # CHANGE SHAPEFILE
 
 
 ## PARAMETERS
+mb_access_token("sk.eyJ1IjoiZnJhbmNpbmVzdGVwaGVucyIsImEiOiJja2ljb3VrczMwdDdhMnhsNjA4Yjh1c2h1In0.WJjq6TysT6zZZnaxsN0s5g")
+readRenviron("~/.Renviron")
+
 A <- "Best"
 B <- "Still Desirable"
 C <- "Declining"
@@ -59,5 +63,23 @@ holc_edited <- holc_import %>%
                          holc_grade == "D" ~ D)
   )
 
-st_write(holc_edited, "Kansas_City_HOLC_grades_polygons.shp")
 
+
+## CHECK VIA MAPPING
+gradespal <- colorFactor(topo.colors(4), holc_edited$category)
+
+leaflet() %>% 
+  addMapboxTiles(
+    style_id = "dark-v9",
+    username = "mapbox"
+  ) %>% 
+  addPolygons(
+    data = holc_edited,
+    color = ~gradespal(category),
+    weight = 0.5,
+    label = ~category
+  )
+
+
+## EXPORT
+st_write(holc_edited, "Oakland_CA_HOLC_grades_polygons.shp")
