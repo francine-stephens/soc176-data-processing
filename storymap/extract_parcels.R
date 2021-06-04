@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 5/23/21
-# LAST UPDATED: 6/2/21
+# LAST UPDATED: 6/4/21
 #-------------------------------------------------------------------------------
 
 ## SETUP------------------------------------------------------------------------
@@ -36,6 +36,16 @@ sample_tracts <- c("025500",
                    "026003",
                    "026002")
 wgs <- 4326
+vacant_codes <-  c('V',
+                   'VA1',
+                   'VCI',
+                   'VPU',
+                   'VR')
+condo_codes <- c('Z',
+                 'ZBM',
+                 'CZ',
+                 'OZ'
+                 )
 
 ## PATHS
 setwd("~/Stanford/SOC176/soc176-data-processing/storymap")
@@ -103,12 +113,20 @@ subset_parcels <- sf_parcels %>%
 
 
 subset_parcels_grouped <- subset_parcels %>%
-  select(apn: zoning_desc) %>%
-  mutate(zoning_general = case_when(
+  select(apn: zoning_desc, RP1CLACDE) %>%
+  mutate(zone_gen = case_when(
             str_detect(zoning_desc, "COMMERCIAL") ~ "Commercial",
             str_detect(zoning_desc, "RESIDENTIAL") ~ "Residential",
             str_detect(zoning_desc, "PUBLIC") ~ "Public"),
-         zoning_general = as.factor(zone_general)
+         zone_gen = as.factor(zone_gen),
+         vacant = as.factor(if_else(RP1CLACDE %in% vacant_codes,
+                          "Vacant",
+                          "Not Vacant")
+                            ),
+         condos = as.factor(if_else(RP1CLACDE %in% condo_codes,
+                                    "Condo",
+                                    "Not a Condo")
+         )
          )
 
 ## City-Center EPA general zoning codes
@@ -140,23 +158,30 @@ leaflet() %>%
 
 
 ## VIEW PARCEL GROUPED MAP------------------------------------------------------
-zoningpal <- colorFactor(palette = c("blue", "red", "green", ), 
+zoningpal <- colorFactor(palette = c("blue", "red", "green"), 
                          levels = c("Commercial", "Residential", "Public"))
 zoningpal2 <- colorFactor(topo.colors(6), epa_parcels_output$gen_zones)
-  
+vacantpal <-  colorFactor(palette = c("green", "red"), 
+                          levels = c("Not Vacant", "Vacant")
+                          )
+condopal <- colorFactor(palette = c("green", "red"), 
+                        levels = c("Not a Condo", "Condo")
+)
+
 leaflet() %>% 
   addMapboxTiles(
-    style_id = "streets-v11",
+    style_id = "dark-v9",
     username = "mapbox"
   ) %>% 
   addPolygons(
-    data = epa_parcels_output %>% st_transform(., wgs),
-    color = ~zoningpal2(gen_zones),
+    data = subset_parcels_grouped %>% st_transform(., wgs),
+    color = ~condopal(condos),
     weight = 0.5,
-    label = ~gen_zones
+    label = ~RP1CLACDE
   )
 
 
 ## EXPORT PARCELS---------------------------------------------------------------
 st_write(subset_parcels_grouped, "excelsior_parcels_categorized.shp")
 st_write(epa_parcels_output, "EPA_parcels_zoned.shp")
+st_write(subset_parcels_grouped, "excelsior_parcels_extra_categories.shp")
