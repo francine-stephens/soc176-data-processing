@@ -1409,3 +1409,17 @@ leaflet() %>%
               label = ~(GEOID10)
   )
   
+
+## EXPORTS
+excelsior_geoid <- c("06075025500",
+                     "06075026100",
+                     "06075026301",
+                     "06075026004",
+                     "06075026001",
+                     "06075026003",
+                     "06075026002")
+
+excelsior_all_decades_stacked <- sf_tracts_all_decades_seg %>%
+  filter(GEOID10 %in% excelsior_geoid) %>%
+  select(-statefp, -state_place, -NHWHITE_PR:-divergence)
+st_write(excelsior_all_decades_stacked, "excelsior_tracts_all_decades.shp")
