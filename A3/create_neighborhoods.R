@@ -4,7 +4,7 @@
 # GEOGRAPHIES CREATED: Census Tracts, Neighborhoods
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/11/21
-# LAST UPDATED: 5/23/21
+# LAST UPDATED: 6/4/21
 #-------------------------------------------------------------------------------
 
 ## LIBRARIES
@@ -152,7 +152,7 @@ st_write(claudia_blue_hills_kc, "nhood_blue_hills_kc.shp")
 
 josh_chinatown_oakland <- full_class_nhoods %>%
   filter(student == "Josh")
-st_write(josh_chinatown_oakland, "nhood_chinatown_oakland.shp")
+st_write(josh_chinatown_oakland, "nhood_chinatown_oakland_v2.shp")
 
 betsayada_boyle_heights_la <- full_class_nhoods %>%
   filter(student == "Betsayada")
@@ -188,7 +188,7 @@ excelsior <- us_tracts %>%
 # test the tracts shapefile
 leaflet() %>%
   addTiles() %>%
-  addPolygons(data = excelsior %>%
+  addPolygons(data = josh_chinatown_oakland %>%
                 st_transform(., crs = 4326) 
   )
 
