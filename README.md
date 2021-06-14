@@ -9,7 +9,7 @@ This repository contains the scripts used to process and prepare data for the co
 
 ### Organization of Repo
 
-The repo is organized into subdirectories that represent the assignments. The scripts and data for the assignment are stored in the respective assignment subdirectory. In the list below, the content and function of each assignment subdirectory are listed out. 
+The repo is organized into subdirectories that represent the assignments. The scripts and data for the assignment are stored in the respective assignment subdirectory. In the list below, the content and function of the code and data in each assignment subdirectory are briefly described. 
 
 **A3** 
 
