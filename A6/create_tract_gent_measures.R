@@ -3,7 +3,7 @@
 #
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/30/21
-# LAST UPDATED: 6/1/21
+# LAST UPDATED: 6/13/21
 #-------------------------------------------------------------------------------
 
 
@@ -30,7 +30,7 @@ wd <- getwd()
 shp_repo <- "C:/Users/Franc/Documents/Shapefile_Repository/"
 tracts10_path <- "2010USA_CensusGeog_Shp/nhgis0005_shapefile_tl2010_us_tract_2010/"
 metros10_path <- "2010USA_CensusGeog_Shp/tl_2010_us_cbsa10/"
-student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/"
+student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/soc176-data-processing/A3/"
 LTDB_geog_ids_path <- "C:/Users/Franc/Documents/Stanford/SOC176/soc176-data-processing/A5/LTDB_Std_All_fullcount/"
 
 # APIs

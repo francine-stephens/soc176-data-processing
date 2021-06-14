@@ -2,8 +2,8 @@
 # PLACE-BASED RACIAL COMPOSITION & SEGREGATION MEASURES
 # 
 # BY: Francine Stephens
-# DATE CREATED: 04/26/2020
-# LAST UPDATED: 04/28/2020
+# DATE CREATED: 04/26/2021
+# LAST UPDATED: 06/13/2021
 #-------------------------------------------------------------
 
 # SET-UP------------------------------------------------------------------------
@@ -29,7 +29,7 @@ wd <- getwd()
 shp_repo <- "C:/Users/Franc/Documents/Shapefile_Repository/"
 tracts10_path <- "2010USA_CensusGeog_Shp/nhgis0005_shapefile_tl2010_us_tract_2010/"
 metros10_path <- "2010USA_CensusGeog_Shp/tl_2010_us_cbsa10/"
-student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/"
+student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/soc176-data-processing/A3/"
 ltdb_path <- "/LTDB_Std_All_fullcount/"
 
 # APIs

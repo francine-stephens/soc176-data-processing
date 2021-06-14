@@ -4,7 +4,7 @@
 # GEOGRAPHIES CREATED: Census Tracts, Neighborhoods
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/11/21
-# LAST UPDATED: 6/4/21
+# LAST UPDATED: 6/13/21
 #-------------------------------------------------------------------------------
 
 ## LIBRARIES
@@ -25,7 +25,6 @@ setwd("~/Stanford/SOC176/soc176-data-processing/A3")
 wd <- getwd()
 shp_repo <- "C:/Users/Franc/Documents/Shapefile_Repository/"
 tracts_path <- "2010USA_CensusGeog_Shp/nhgis0005_shapefile_tl2010_us_tract_2010/"
-student_path <- "C:/Users/Franc/Documents/Stanford/SOC176/"
 
 # APIs
 census_api_key("99ccb52a629609683f17f804ca875115e3f0804c",  overwrite = T)
@@ -33,7 +32,7 @@ Sys.setenv(CENSUS_KEY="99ccb52a629609683f17f804ca875115e3f0804c")
 
 
 ## DATA
-student_hoods <- read_csv(paste0(student_path,
+student_hoods <- read_csv(paste0(wd,
                                  "student_neighborhoods_list.csv")
 )
 
