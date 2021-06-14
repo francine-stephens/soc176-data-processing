@@ -14,9 +14,9 @@ The repo is organized into subdirectories that represent the assignments. The sc
 **A3** 
 
 * Assignment: Key Non-Profit Organizations in the neighborhood
+* Data: The neighborhoods CSV indicates the census tracts that define students' neighborhoods, which is important for defining the filtering and grouping in the script. CSV file with addresses of key non-profit organizations. These data were hand-collected and uploaded to ArcGIS Online for geocoding. 
 * Code: Creates neighborhood boundaries by calling on the U.S. Census Tract shapefile and filtering to the set of tracts that students listed in their first assignment to define their neighborhood. 
   + n.b. The census tract shapefile called on in the script is located in the [shapefile repository](https://github.com/francine-stephens/Shapefile_Repository).
-* Data: CSV file with addresses of key non-profit organizations. These data were hand-collected and uploaded to ArcGIS Online for geocoding. 
 
 **A4**
 
