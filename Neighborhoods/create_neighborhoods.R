@@ -32,7 +32,7 @@ Sys.setenv(CENSUS_KEY="99ccb52a629609683f17f804ca875115e3f0804c")
 
 
 ## DATA
-student_hoods <- read_csv(paste0(wd,
+student_nhoods <- read_csv(paste0(wd,
                                  "student_neighborhoods_list.csv")
 )
 
