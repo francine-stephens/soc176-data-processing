@@ -39,6 +39,10 @@ vignettes/*.pdf
 .Renviron
 
 # CSV & Shapefiles
+
+nhood_shapes/nhood_centroids/*
+*.zip
+
 soc176_shapes/*
 
 A4/denver_crime_04132021/*
