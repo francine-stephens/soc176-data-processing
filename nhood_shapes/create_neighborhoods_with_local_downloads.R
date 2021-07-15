@@ -7,7 +7,7 @@
 # GEOGRAPHIES CREATED: Census tracts, Neighborhoods polygons & centroids 
 # AUTHOR: Francine Stephens
 # DATE CREATED: 4/11/21
-# LAST UPDATED: 7/11/21
+# LAST UPDATED: 7/14/21
 #-------------------------------------------------------------------------------
 
 ## SET-UP-----------------------------------------------------------------------
@@ -106,10 +106,8 @@ for(nhood in unique(full_class_nhoods_polys$full_nhood_name)) {
 }
 
 # Output Neighborhood centroids for the class:
-  ## At the end of the quarter, this can be a helpful shapefile for building the
+  ## At the end of the quarter, this can be a helpful file for building the
   ## story map that contains all the students' story maps. 
-dir.create(paste0("nhood_centroids"), showWarnings = TRUE)
 st_write(full_class_nhoods_cents,
-         paste0("nhood_centroids/", "class_nhoods_centroids.shp"))
-files2zip <- dir(paste0(wd, "/nhood_centroids"), full.names = TRUE)
-zip(zipfile = paste0(wd, "/nhood_centroids"), files = files2zip)
+         "class_nhoods_centroids.csv",
+         layer_options = "GEOMETRY=AS_XY")

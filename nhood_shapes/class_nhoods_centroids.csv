@@ -1,0 +1,21 @@
+X,Y,student,full_nhood_name,nhood_name,city,state_ab,GEOIDS,iframe
+-122.3208179,37.56932524,Andrew,Downtown San Mateo CA,Downtown,San Mateo,CA,"06081606200, 06081606300","<iframe width=""560"" height=""315"" src=""https://stanford.maps.arcgis.com/apps/Cascade/index.html?appid=568e1d87f0e747469656e5dd813b7c22"" frameborder=""0"" scrolling=""no""></iframe>"
+-117.6701396,33.98256448,Anthony,College Park Chino CA,College Park,Chino,CA,6071012200,
+-121.8178112,37.32470451,Anushree,Overfelt San Jose CA,Overfelt,San Jose,CA,"06085503306, 06085503305",
+-119.0153524,35.37697815,Becky,Downtown Bakersfield CA,Downtown,Bakersfield,CA,6029001600,
+-118.2207435,34.0438364,Betsayada,Boyle Heights Los Angeles CA,Boyle Heights,Los Angeles,CA,"06037206032, 06037204410, 06037204600",
+-94.56049813,39.02572784,Claudia,Blue Hills Kansas City MO,Blue Hills,Kansas City,MO,"29095007600, 29095008000",
+-122.436009,37.72239775,Francine,Excelsior San Francisco CA,Excelsior,San Francisco,CA,"06075026004, 06075025500, 06075026001, 06075026003, 06075026301, 06075026002, 06075026100","<iframe width=""560"" height=""315"" src=""https://stanford.maps.arcgis.com/apps/MapJournal/index.html?appid=64c1e53d0ad3424f899049f619658869"" frameborder=""0"" scrolling=""no""></iframe>"
+-122.4468367,37.76826463,Grace,Haight-Ashbury San Francisco CA,Haight-Ashbury,San Francisco,CA,"06075016600, 06075017101",
+-120.5056617,46.59894601,Jessica,Downtown Yakima WA,Downtown,Yakima,WA,53077000100,
+-122.4173375,37.75994611,Jordan,Mission District San Francisco CA,Mission District,San Francisco,CA,"06075022801, 06075020800, 06075020700",
+-122.267563,37.79603651,Josh,Chinatown Oakland CA,Chinatown,Oakland,CA,"06001403000, 06001403300",
+-79.942606,40.40298069,Kyle,Hazelwood Pittsburgh PA,Hazelwood,Pittsburgh,PA,"42003562300, 42003562900","<iframe width=""560"" height=""315"" src=""https://storymaps.arcgis.com/stories/3dc9256bc0394365a79003ad79855612"" frameborder=""0"" scrolling=""no""></iframe>"
+-104.8282465,39.78480755,Nashira,Montbello Denver CO,Montbello,Denver,CO,"08031008306, 08031008387",
+-122.1325231,37.44577704,Nicole,Duveneck Palo Alto CA,Duveneck,Palo Alto,CA,6085511100,
+-117.967802,33.73756323,Niki,Little Sai Gon Westminster CA,Little Sai Gon,Westminster,CA,6059099222,
+-122.1467458,37.46824436,Olivia,City Center East Palo Alto CA,City Center,East Palo Alto,CA,6081612000,
+-83.07295413,42.33053169,Pamela,Corktown Detroit MI,Corktown,Detroit,MI,26163521400,
+-122.4173375,37.75994611,Ricky,Mission District San Francisco CA,Mission District,San Francisco,CA,"06075022801, 06075020800, 06075020700",
+-121.9889341,37.57727164,Sahir,Niles Fremont CA,Niles,Fremont,CA,6001441200,
+-122.1558109,37.76037635,Whitney,Oak Knoll Oakland CA,Oak Knoll,Oakland,CA,6001409800,"<iframe width=""560"" height=""315"" src=""https://storymaps.arcgis.com/stories/4a3183179dfb416d9871116855898fa3"" frameborder=""0"" scrolling=""no""></iframe>"
